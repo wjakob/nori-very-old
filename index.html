@@ -1,3 +1,229 @@
-<html>
-Nori 2 website.
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="description" content="Nori 2 page"/>
+		<meta charset="UTF-8"/>
+
+		<title>Nori 2</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="css/bootstrap.min.css" rel="stylesheet"/>
+
+		<!-- Custom styles for this template -->
+		<link href="css/nori.css" rel="stylesheet"/>
+
+		<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+		<!--[if lt IE 9]>
+		  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+		  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+		<nav class="navbar navbar-inverse navbar-shadow navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#">Nori 2</a>
+				</div>
+				<div id="navbar" class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li class="active"><a href="#">Home</a></li>
+						<li><a href="#about">About</a></li>
+						<li><a href="#guidelines">Guidelines</a></li>
+						<li><a href="#prelim" data-toggle="collapse" data-parent="#accordion">Preliminaries</a></li>
+						<li><a href="#pa1" data-toggle="collapse" data-parent="#accordion">Assignment 1</a></li>
+						<li><a href="#pa2" data-toggle="collapse" data-parent="#accordion">Assignment 2</a></li>
+					</ul>
+				</div><!--/.nav-collapse -->
+			</div>
+		</nav>
+
+		<div class="container tooltips">
+			<div class="row-centered">
+				<div class="col-centered">
+					<img class="img-responsive" src="images/logo-beveled.png"/>
+				</div>
+			</div>
+			<div class="page-header">
+				<h1>Nori 2 <small>an educational ray tracer</small></h1>
+			</div>
+
+			<div class="row">
+				<div class="col-md-6 text-justify" id="about">
+					<h2>About</h2>
+					<p>
+						Nori 2 is a minimalistic ray tracer written in C++. It runs
+						on Windows, Linux, and Mac OS and provides a foundation for
+						the homework assignments in the course
+						<a href="https://www.graphics.ethz.ch/teaching/imsynth15/home.php">Image Synthesis</a> taught at ETH Zürich.
+					</p>
+					<p>
+						While Nori provides much support code to simplify your development 
+						work as much as possible, the code that you will initially receive
+						from us does very little: it loads a scene and saves a rendered image
+						as an <span rel="tooltip" title="A popular high dynamic-range (HDR) image file format"><a href="http://en.wikipedia.org/wiki/OpenEXR">OpenEXR</a></span> image&mdash;but
+						the actual rendering code is missing, hence the output image just
+						consists of black pixels.
+
+						Your task will be to extend this system to a full-fledged physically-based 
+						renderer as part of programming assignments and your final project.
+					</p>
+				</div>
+				
+				<div class="col-md-6" id="general">
+					<h2>Core features</h2>
+					The Nori base code provides many features that would be tedious
+					to implement from scratch. The following are included:
+					<ul>
+						<li>A simple GUI to watch images as they render</li>
+						<li>An XML-based scene file loader</li>
+						<li>Basic point/vector/normal/ray/bounding box classes</li>
+						<li>A pseudorandom number generator (<a href="http://www.pcg-random.org/">PCG32</a>)</li>
+						<li>Support for saving output as <a href="http://www.openexr.com/">OpenEXR files</a></li>
+						<li>A loader for Wavefront OBJ files</li>
+						<li>An optimized <a href="Fast and Parallel Construction of SAH-based Bounding Volume Hierarchies">bounding volume hierarchy builder</a></li>
+						<li>Ray-triangle intersection</li>
+						<li>Code for multi-threaded rendering</li>
+						<li>Image reconstruction filters</li>
+						<li>Statistical χ<sup>2</sup>- and t-tests to verify sampling code</li>
+					</ul>
+				</div>
+			</div> <!-- row -->
+
+			<div class="row margintop">
+				<div class="col-md-6" id="guidelines">
+					<h2>Guidelines</h2>
+					<h3>Permissible sources of information</h3>
+					<p>
+						Feel free to consult additional references
+						when completing projects, but remember cite them in your writeup.
+					</p>
+					<p>
+						When asked to implement feature \(X\), we request that you don't 
+						go and read the source code of the implementation of \(X\) in some other renderer,
+						because you will likely not learn much in the process. The PBRT book
+						is <span rel="tooltip" title="Technically, this book contains the implementation of a renderer, but that's ok in this case.">excluded</span> from this rule.
+						If in doubt, get in touch with the course staff.
+					</p>
+					<h3>References</h3>
+					<p>
+						You may find the following general references useful:
+						<ul>
+							<li>"<em>Physically Based Rendering, Second Edition: From Theory To Implementation</em>" by Matt Pharr and Greg Humphreys. Morgan Kaufmann, 2nd edition, July 2010.</li>
+							<li>"<em>Advanced Global Illumination</em>" by Philip Dutr&eacute;, Philippe Bekaert, and Kavita Bala. AK Peters, 2nd edition, August 2006.</li>
+							<li>"<em>Robust Monte Carlo Methods for Light Transport Simulation </em>", PhD Thesis by Eric Veach, Stanford University, December 1997.
+						</ul>
+					</p>
+				</div>
+				<div class="col-md-6" id="guidelines">
+					<h3>What to submit?</h3>
+					<p>
+						We will generally inspect but not manually test your submitted code,
+						so it's your job to convince us that it does what it's supposed to do.
+						
+						In addition to the specific requirements of each project, you should
+						therefore also turn in a writeup (as a PDF file)
+						with the following information:
+					</p>
+					<h5>Metadata</h5>
+					<ul>
+						<li>Your name and the project title &mdash; 
+						e.g. "Project 1: Monte Carlo sampling and statistical hypothesis tests"</li>
+					</ul>
+					<h5>Summary</h5>
+						Summarize the most noteworthy aspects of the rest of
+						your overview. Anything you mention here should be
+						described in more detail later in the document. You might
+						include:
+					<ul>
+						<li>Which parts of the project were the most challenging</li>
+						<li>Interesting design decisions that you made.</li>
+						<li>Major issues that you ran into while designing, implementing, or testing your submission</li>
+						<li>Known problems with your implementation, such as missing functionality or bugs.</li>
+					</ul>
+					<h5>Design and Implementation</h5>
+					Discuss how you created a program that satisfies the project specification. This includes topics such as:
+					<ul>
+						<li>How you decomposed the program into classes, and what the responsibility of each class is.</li>
+						<li>What algorithms and data structures are employed in your program. We
+						encourage you to include high-level pseudocode of any
+						complex algorithms that you use. We also encourage
+						discussion of any boundary conditions or formulas
+						involved, as well as citations for sources of your
+						algorithms.</li>
+						<li>Tradeoffs you made between simplicity of code and
+						efficiency of execution.</li>
+						<li>How did you verify the correctness of your implementation?</li>
+					</ul>
+
+					<h5>Comments</h5>
+					We would appreciate any comments or criticism to improve the
+					projects in future years. This section of the overview document will not be graded.
+					Examples of information that is useful to us includes:
+					<ul>
+						<li>How much time did you spend on the assignment? How was it divided between designing, coding, and testing?</li>
+						<li>What advice should we have given you before you started?</li>
+						<li>What was hard or surprising about the assignment?</li>
+						<li>What did you like or dislike? What else would you change?</li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="panel-group row" id="accordion" style="margin-top:40px">
+				<div class="panel panel-default">
+					<div id="prelim-header" class="panel-heading">
+						<h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#prelim">Preliminaries: Downloading and Compiling Nori 2</a></h4>
+					</div>
+					<div id="prelim" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<div id="prelim-body"></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="panel panel-default">
+					<div id="pa1-header" class="panel-heading">
+						<h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa1">Programming Assignment 1: Getting started</a> </h4>
+					</div>
+					<div id="pa1" class="panel-collapse collapse">
+						<div class="panel-body">
+							<div id="pa1-body"></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="panel panel-default">
+					<div id="pa2-header" class="panel-heading">
+						<h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa2">Programming Assignment 2: Sampling and warping</a></h4>
+					</div>
+					<div id="pa2" class="panel-collapse collapse">
+						<div class="panel-body">
+							<div id="pa2-body"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div> <!-- container -->
+
+		<!-- Bootstrap core JavaScript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script src="js/jquery.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<script src="js/google-code-prettify/prettify.js"></script>
+		<script src="js/jquery.fancybox.pack.js?v=2.1.5"></script>
+		<script src="js/nori.js"></script>
+		<link href="css/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" media="screen"/>
+
+		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	</body>
 </html>
