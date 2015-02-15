@@ -1,12 +1,89 @@
 <div style="margin-top:-20px">
+<h3>The <tt>git</tt> revision control system</h3>
+<div class="text-justify">
+<p>
+	The base code of Nori is provided as a <tt>git</tt> repository. <tt>git</tt>
+	is the most widespread distributed version control system in use today&mdash;it is a good
+	idea to familiarize yourself with this system if you've never used it before.
+</p>
+<p>
+	Traditionally, a <em>version control system</em> (VCS) allows a team of
+	people to collaboratively edit a repository of files. Multiple people might
+	happen to work on the same file, and the job of the VCS is to track the
+	(potentially conflicting) modifications and merge them into an unambiguous
+	repository state that is usable to the rest of the team. These systems
+	(e.g. CVS, SVN) store the authoritative repository state in a central
+	repository server. Any changes must be <em>committed</em> to this server so
+	that other team members can access them.
+</p>
+<p>
+	A <em>distributed version control system</em> (DVCS) is conceptually
+	similar: multiple people can collaborate, and there is usually a central
+	repository server. The main difference is that there is nothing special
+	about this server: anyone with sufficient permissions can copy the entire
+	repository state including history data using an operation referred to as
+	<em>cloning</em>. From that point on, the local copy acts as a full-fledged
+	repository server that works without a network connection to the central
+	server. Users can inspect the history of files and even commit new changes,
+	which are stored in the local copy. To allow another user to see these
+	changes, they can either be <em>pushed</em> to that user's DVCS server, or
+		they can be pushed to a central server and then <em>pulled</em> by the
+		recipient. There are many providers (such as <a
+	 href="http://www.github.com">github</a> or <a
+  href="https://bitbucket.org">Bitbucket</a>) which offer free repository
+  hosting for open source projects. Because there is nothing special about the
+  central server, it's easy to switch providers, and anyone can start their own
+  version of an existing repository (this is referred to as <em>forking</em>).
+</p>
+<p>
+<h3>Why <tt>git</tt>?</h3>
+You may wonder why we use <tt>git</tt> in this course given that students are
+expected to work on their own. There are multiple good reasons to use it even
+for a single-user workflow:
+</p>
+<ul>
+	<li>
+		The <tt>git diff</tt> feature lets you see what changes you made since the
+		last commit and commit messages provide additional context. This
+		information is extremely useful when debugging programs that don't work
+		as expected.
+		This assumes that you will commit every logical change as a commit with
+		a descriptive commit message (e.g. "Added a new light source type;
+		implementation of interface to come next").
+	</li>
+	<li>
+		The <tt>git branch</tt> feature makes it easy to try out some large
+		modifications to your code and switch back and forth. It's easy to undo
+		these changes and start from scratch if things don't work out. In
+		general, it's good practice to start a new <em>feature branch</em> for
+		every major feature (e.g. area light support or multiple importance
+		sampling). Once the feature is fully realized and bug-free, it can be
+		merged into the main branch. You'll have to implement multiple features
+		for the final project, and it's a good idea to to temporarily separate
+		them from each other in this way.
+	</li>
+	<li>
+		You may stumble across a bug in your code and wonder when it was introduced.
+		The <tt>git bisect</tt> feature lets you quickly find the offending commit.
+	</li>
+	<li>
+		We will likely commit changes to the base code as the semester
+		progresses. You can simply <tt>merge</tt> our new revisions into your
+		repository to benefit from these improvements.
+	</li>
+</ul>
+Recommended learning resources for git are:
+<a href="http://rogerdudler.github.io/git-guide/">git-the simple guide</a>,
+the <a href="http://gitimmersion.com/index.html">git immersion tutorial</a>,
+github's <a href="https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf">cheat sheet</a>, and
+the extensive free <a href="http://git-scm.com/book/en/v2">Pro Git</a> ebook.
+</div>
+
 <div class="col-md-6 text-justify">
 	<h3>Cloning using the command line</h3>
 	<p>
 		The source code of Nori is available on <a
-		href="https://github.com/wjakob/nori2">github</a>. For
-		details on <a href="http://git-scm.com">git</a> in
-		general, refer to github's <a
-		href="http://learn.github.com/p/intro.html">Introduction to Git</a>.
+		href="https://github.com/wjakob/nori2">github</a>.
 		To check out a copy of the source code, enter
 	</p>
 	<pre class="dark">
@@ -14,16 +91,15 @@ $ git clone --recursive
 	https://github.com/wjakob/nori2</pre>
 	<p>
 		on the terminal. 
-
-		It is a good habit to frequently commit changes you made to the
-		repository; this will allow you to jump back and forth
-		between different versions, which can be quite useful for
-		debugging. Note that we'll publish extensions and bug-fixes to this
-		repository as the semester progresses. Run the command
+		We'll publish extensions and bug-fixes to this
+		repository as the semester progresses. To get them, 
+		navigate into the <tt>nori2</tt>directory and run the command
 <pre class="dark">
 $ git pull</pre>
-		to merge them into your repository and benefit from the
-		improvements.
+		If there were any concurrent modifications to the same file,
+		<tt>git</tt> may ask you to resolve merge conflicts. We refer you to
+		the learning resources for information about resolving conflicts in
+		general.
 	</p>
 </div>
 
@@ -35,6 +111,11 @@ $ git pull</pre>
 			is a convenient visual front-end to Git. We particularly recommend this tool if you've
 			never used Git before. When cloning the project, make sure
 			that the setting for recursive cloning is active under <em>Advanced Options</em>.
+			We'll publish extensions and bug-fixes to this
+			repository as the semester progresses.
+			You can simply <em>pull</em>
+			the changes and merge them into your repository to benefit from the
+			improvements.
 		</div>
 		<div class="thumbnail col-md-5">
 			<a class="fancybox" href="images/sourcetree.png"><img src="images/sourcetree.png"/></a>
@@ -43,14 +124,5 @@ $ git pull</pre>
 			</div>
 		</div>
 	</div>
-	<p>
-		It is a good habit to frequently commit changes you made to the
-		repository; this will allow you to return to jump back and forth
-		between different versions, which can be quite useful for
-		debugging. Note that we'll publish extensions and bug-fixes to this
-		repository as the semester progresses. You can simply <em>pull</em>
-		the changes and merge them into your repository to benefit from the
-		improvements.
-	</p>
 </div>
 </div>
