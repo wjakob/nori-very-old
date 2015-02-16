@@ -4,7 +4,7 @@
 <div class="text-justify">
 <p>
 	Follow the <a href=#prelim>preliminaries</a> step-by-step guide. Compule nori and create 
-	your first nori class (surface normal integrator). Once you are finished render the scene 
+	your first nori class (shading normal integrator). Once you are finished render the scene 
 	in <tt>scenes/pa1/ajax-normal.xml</tt> and show a side by side comparison against the reference 
 	<tt>scenes/pa1/ref/ajax-normal.exr</tt> in your report.
 </p>
@@ -44,11 +44,11 @@ Vector3f uniformSampleHemisphere(Sampler *sampler, const Normal3f &n);
 	and the provided sampler, generate a point on the hemisphere and trace a
 	ray into this direction. The ray should have a user-specifiable
 	length that can be passed via an XML declaration as follows:
-<pre class="prettyprint">
-&lt;integrator type="av"&gt;
-    &lt;float name="length" value="... ray length ..."/&gt;
-&lt;/integrator&gt;
-</pre>
+	<pre class="prettyprint">
+	&lt;integrator type="av"&gt;
+	    &lt;float name="length" value="... ray length ..."/&gt;
+	&lt;/integrator&gt;
+	</pre>
 	The integrator should return <code>Color3f(0.0f)</code> if the ray segment is
 	occluded and <code>Color3f(1.0f)</code> otherwise.
 </p>
@@ -75,8 +75,14 @@ Vector3f uniformSampleHemisphere(Sampler *sampler, const Normal3f &n);
 	should be instantiated by the parser during the loading of the scene and will be used 
 	by your various integrators during render time. Parametrize your point light with a 
 	<tt>Color3f</tt> power (Watts) and the world space position (<tt>Point3f</tt>) of the 
-	point light. Implement a new method in <tt>PointLight</tt> class which returns incident 
-	radiance at an intersection (given as a parameter) from this point light. 
+	point light. See <tt>scenes/pa1/sponza-direct.xml</tt> for how these parameters should be
+	used in your XML files. 
+
+	<!-- Implement a new method in <tt>PointLight</tt> class which returns incident 
+	radiance at an intersection (given as a parameter) from this point light. --> 
+	Currently the abstract <tt>Emitter</tt> class is empty. You must come up with a good generic
+	interface for all emitters such that they can be queried during rendertime and can also be
+	easily constructed by the parser.
 
 	<h4>Direct Illumination integrator <em>(15 points)</em></h4>
 	<tt>Direct::Li</tt> will be called multiple times for each camera ray and will be 
@@ -93,7 +99,8 @@ Vector3f uniformSampleHemisphere(Sampler *sampler, const Normal3f &n);
 	<p>
 		Make sure that you can reproduce the reference image in <tt>scenes/pa1/ref/sponza-direct-4spp.exr</tt> 
 		by rendering: <tt>scenes/pa1/sponza-direct.xml</tt>. Also you should pass all tests in 
-		<tt>scenes/pa1/test-direct.xml</tt>. Finally provide a side by side comparison with the reference image in your report.
+		<tt>scenes/pa1/test-direct.xml</tt>. Finally provide a side by side comparison with the 
+		reference image in your report.
 	</p>
 
 
@@ -107,19 +114,19 @@ Vector3f uniformSampleHemisphere(Sampler *sampler, const Normal3f &n);
 		integrators for this assignment.
 	</p>
 
-<h3> Hacker Points <em>(10 points)</em></h3>
+<h3> Bonus: Hacker Points <em>(10 points)</em></h3>
 
 	<div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points 
 	for the daring few. Sometimes you might be required to implement something that was not taught in class and 
-	will you will have to do some research and creative thinking. Hacker Points are awarded only to students who 
-	implemented 100% of the normal assignment points.
+	you might have to do some research and creative thinking. Hacker Points are awarded only to students who 
+	implemented all of the remaining assignment.
 	</div>
 
 	<p> 
 	The goal of this exercise is to improve the performance of the current acceleration structure (<tt>BVH</tt>) during 
-	render time. You are given a scene (<tt>./scenes/pa1/sponza-av.xml</tt>). Count the average ray-triangle intersections 
-	per ray camera ray for the <tt>AverageVisibility</tt> integrator. Explain how you dealt with the thread concurrency 
-	issues in your report. Your goal is to reduce that number without changing the rendered image. Describe in your report 
+	render time. You are given a scene to render (<tt>scenes/pa1/sponza-av.xml</tt>). Count the average ray-triangle intersections 
+	per ray camera ray for the <tt>AverageVisibility</tt> integrator. Explain in your report how you dealt with the thread concurrency 
+	issues when counting intersections from various threads. Your goal is to reduce that number without changing the rendered image. Describe in your report 
 	your changes and their individual impact on the average number of ray-triangle intersections during render time and 
 	their impact on BVH construction time.
 	</p>
