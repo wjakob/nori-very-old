@@ -1,5 +1,15 @@
 <div style="margin-top:-20px">
-<h3>Part 1: Average Visibility Integrator <em>(xx points)</em></h3>
+
+<h3>Part 1: Normal Integrator <em>(35 points)</em></h3>
+<div class="text-justify">
+<p>
+	Follow the <a href=#prelim>preliminaries</a> step-by-step guide. Compule nori and create 
+	your first nori class (surface normal integrator). Once you are finished render the scene 
+	in <tt>scenes/pa1/ajax-normal.xml</tt> and show a side by side comparison against the reference 
+	<tt>scenes/pa1/ref/ajax-normal.exr</tt> in your report.
+</p>
+
+<h3>Part 2: Average Visibility Integrator <em>(20 points)</em></h3>
 <div class="text-justify">
 <p>
 	In this exercise you will implement a new integrator named
@@ -10,9 +20,10 @@
 	<tt>BSDF</tt>). 
 </p>
 
-	<h4>Implement Average Visibility Integrator <em>(xx points)</em></h4>
+	<h4>Implement Average Visibility Integrator <em>(10 points)</em></h4>
 	<p>
-	Take a look at the <tt>Warp</tt> class in <tt>include/nori/warp.h</tt> and <tt>src/warp.cpp</tt>. Currently, it just implements a single function
+	Take a look at the <tt>Warp</tt> class in <tt>include/nori/warp.h</tt> and <tt>src/warp.cpp</tt>. 
+	Currently, it just implements a single function
 	</p>
 <pre class="prettyprint">
 Vector3f uniformSampleHemisphere(Sampler *sampler, const Normal3f &n);
@@ -42,44 +53,75 @@ Vector3f uniformSampleHemisphere(Sampler *sampler, const Normal3f &n);
 	occluded and <code>Color3f(1.0f)</code> otherwise.
 </p>
 
-	<h4>Validation <em>(xx points)</em></h4>
+	<h4>Validation <em>(10 points)</em></h4>
 	<p>
 		The directory <tt>scenes/pa1</tt> contains several example scenes that you
 		can use to try your implementation. These scenes invoke your integrator many
 		times for each pixel, and the (random) binary visibility values are accumulated
 		to approximate the average visibility of surface points. Make sure that you can
-		reproduce the images in
+		reproduce the reference images in <tt>scenes/pa1/ref/ajax-av-1024spp.exr</tt> and 
+		<tt>scenes/pa1/ref/ajax-av-1024spp.exr</tt> by rendering:
 		<tt>scenes/pa1/ajax-av.xml</tt> and <tt>scenes/pa1/sponza-av.xml</tt>
-		and pass the testcase <tt>scenes/pa1/test-av.xml</tt>.
+		In addition you should pass all the tests in <tt>scenes/pa1/test-av.xml</tt>. 
+		Finally provide a side by side comparison with the reference images in your report.
 	</p>
 
-<h3>Part 2: Direct Illumination Integrator <em>(xx points)</em></h3>
+<h3>Part 3: Direct Illumination Integrator <em>(35 points)</em></h3>
 
-	<h4>Point Lights <em>(xx points)</em></h4>
-	Before starting, read section 12.2 in the textbook about point lights. Implement a <tt>PointLight</tt> class which derives from <tt>Emitter</tt> and implements an infinitesimal light source which emits light uniformly in all directions. Point lights should be instantiated by the parser during the loading of the scene and will be used by your various integrators during render time. Parametrize your point light with a <tt>Color3f</tt> power (Watts) and the world space position of the point light. Implement a new method in <tt>PointLight</tt> class which returns incident radiance at an intersection (given as a parameter) from this point light. 
+	<h4>Point Lights <em>(10 points)</em></h4>
+	Before starting, read section 12.2 in the textbook about point lights. Implement a 
+	<tt>PointLight</tt> class which derives from <tt>Emitter</tt> and implements an
+	infinitesimal light source which emits light uniformly in all directions. Point lights 
+	should be instantiated by the parser during the loading of the scene and will be used 
+	by your various integrators during render time. Parametrize your point light with a 
+	<tt>Color3f</tt> power (Watts) and the world space position (<tt>Point3f</tt>) of the 
+	point light. Implement a new method in <tt>PointLight</tt> class which returns incident 
+	radiance at an intersection (given as a parameter) from this point light. 
 
-	<h4>Direct Illumination integrator <em>(xx points)</em></h4>
-	<tt>Direct::Li</tt> will be called multiple times for each camera ray and will be internally averaged by nori. Its expected to return a one sample estimate of the incident radiance along the camera <tt>Ray3f</tt> which is given as a parameter. The equation which will be solved (15.1) is defined in the textbook in chapter 15 page 744. For the purposes of this exercise you can safely assume that there will be no emission at the first intersection. At the first camera ray intersection compute incident radiance from all your point lights in the scene, multiply that by the BSDF and a cosine term. 
+	<h4>Direct Illumination integrator <em>(15 points)</em></h4>
+	<tt>Direct::Li</tt> will be called multiple times for each camera ray and will be 
+	internally averaged by nori. Its expected to return a one sample estimate of the incident 
+	radiance along the camera <tt>Ray3f</tt> which is given as a parameter. The equation which 
+	will be solved (15.1) is defined in the textbook in chapter 15 page 744. For the purposes 
+	of this exercise you can safely assume that there will be no emission at the first 
+	intersection. At the first camera ray intersection compute incident radiance from all your 
+	point lights in the scene, multiply that by the BSDF and the cosine term between the 
+	shading normal and the direction towards the light source. For this exercise you will only 
+	need to use the already implemented <tt>Diffuse</tt> BSDF
 
-	<h4>Validation <em>(xx points)</em></h4>
+	<h4>Validation <em>(10 points)</em></h4>
 	<p>
-		Some test to implement...
+		Make sure that you can reproduce the reference image in <tt>scenes/pa1/ref/sponza-direct-4spp.exr</tt> 
+		by rendering: <tt>scenes/pa1/sponza-direct.xml</tt>. Also you should pass all tests in 
+		<tt>scenes/pa1/test-direct.xml</tt>. Finally provide a side by side comparison with the reference image in your report.
 	</p>
 
 
-<h3>Part 3: Interesting Scene <em>(xx points)</em></h3>
+<h3>Part 3: Interesting Scene <em>(10 points)</em></h3>
 	<p>
-	Include in your report an interesting scene which was rendered using one of your newly implemented integrators for this assignment.
+		Make your own interesting scene and submit a rendering (or more) using any of the implemented integrators.
+		The filename format for this scene should be interesting-ex1-firstname-familyname-N, where
+		N depends on how many interesting images you are submitting. You can play around with the displacement
+		functions, colors lighting and geometry. Be creative! Your renderings will be posted on the Course
+		GalleryInclude in your report an interesting scene which was rendered using one of your newly implemented 
+		integrators for this assignment.
 	</p>
 
+<h3> Hacker Points <em>(10 points)</em></h3>
 
-<h3> Hacker Points <em>(xx points)</em></h3>
-
-	<div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points for the daring few. Sometimes you might be required to implement something that was not taught in class and will you will have to do some research and creative thinking. Hacker Points are awarded only to students who implemented 100% of the normal assignment points.
+	<div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points 
+	for the daring few. Sometimes you might be required to implement something that was not taught in class and 
+	will you will have to do some research and creative thinking. Hacker Points are awarded only to students who 
+	implemented 100% of the normal assignment points.
 	</div>
 
 	<p> 
-	The goal of this exercise is to improve the performance of the current acceleration structure (<tt>BVH</tt>) during render time. You are given a scene (<tt>./scenes/sponza.xml</tt>) which should use xx.xx ray-triangle intersections per ray camera ray for the <tt>AverageVisibility</tt> integrator. Your goal is to reduce that number without  changing the rendered result and detail in your report your changes and their individual impact during render time and construction time.
+	The goal of this exercise is to improve the performance of the current acceleration structure (<tt>BVH</tt>) during 
+	render time. You are given a scene (<tt>./scenes/pa1/sponza-av.xml</tt>). Count the average ray-triangle intersections 
+	per ray camera ray for the <tt>AverageVisibility</tt> integrator. Explain how you dealt with the thread concurrency 
+	issues in your report. Your goal is to reduce that number without changing the rendered image. Describe in your report 
+	your changes and their individual impact on the average number of ray-triangle intersections during render time and 
+	their impact on BVH construction time.
 	</p>
 
 </div>
