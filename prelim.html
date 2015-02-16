@@ -169,6 +169,7 @@ and several dependency libraries (right table) that are briefly explained below.
 			<tbody>
 				<tr><td><tt>ext/openexr</tt></td><td>A high dynamic range image format library</td></tr>
 				<tr><td><tt>ext/pcg32</tt></td><td>A tiny self-contained pseudorandom number generator</td></tr>
+				<tr><td><tt>ext/filesystem</tt></td><td>A tiny self-contained library for manipulating paths on various platforms</td></tr>
 				<tr><td><tt>ext/pugixml</tt></td><td>A light-weight XML parsing library</td></tr>
 				<tr><td><tt>ext/tbb</tt></td><td>Intel's Boost Thread Building Blocks for multi-threading</td></tr>
 				<tr><td><tt>ext/tinyformat</tt></td><td>Type-safe C++11 version of <tt>printf</tt> and <tt>sprintf</tt></td></tr>
@@ -492,15 +493,104 @@ NORI_NAMESPACE_END</pre>
   src/bitmap.cpp
   ...
 )</pre>
+		<p>
 		Add the line <tt>src/normals.cpp</tt> at the end of the source file
-		list and recompile. If everything goes well, CMake will create an executable
-		named <tt>nori</tt> (or <tt>nori.exe</tt> on Windows) which you can call
-		on the command line.
+		list and recompile. If everything goes well, CMake will create an
+		executable named <tt>nori</tt> (or <tt>nori.exe</tt> on Windows) which
+		you can call on the command line.
+		</p>
+		<p>
+		Finally, create a small test scene with the following content and save it as <tt>test.xml</tt>:
+		</p>
+		<pre class="prettyprint linenums lang-xml">
+&lt;?xml version="1.0"?&gt;
 
+&lt;scene&gt;
+    &lt;integrator type="normals"&gt;
+        &lt;string name="myProperty" value="Hello!"/&gt;
+    &lt;/integrator&gt;
 
-		<p>Visualizing OpenEXR files</p>
+    &lt;camera type="perspective"/&gt;
+&lt;/scene&gt;
+</pre>
+<p>
+		This file instantiates our integrator and creates the default camera
+		setup. Running <tt>nori</tt> with this scene causes two things to
+		happen:
+		</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+First, some text output should be visible on the console:
+<pre class="prettyprint lang-bash">
+$ ./nori test.xml
 
-		<a href="https://bitbucket.org/edgarv/hdritools/downloads">HDRI Tools</a> by Edgar Velázquez-Armendáriz.
+Property value was : Hello!
+
+Configuration: Scene[
+  integrator = NormalIntegrator[],
+  sampler = Independent[sampleCount=1]
+  camera = PerspectiveCamera[
+    cameraToWorld = [1, 0, 0, 0;
+                     0, 1, 0, 0;
+                     0, 0, 1, 0;
+                     0, 0, 0, 1],
+    outputSize = [1280, 720],
+    fov = 30.000000,
+    apertureRadius = 0.000000,
+    focusDistance = 10000.000000,
+    clip = [0.000100, 10000.000000],
+    rfilter = GaussianFilter[radius=2.000000, stddev=0.500000]
+  ],
+  medium = null,
+  envEmitter = null,
+  meshes = {
+  }
+]
+
+Rendering .. done. (took 93.0ms)
+Writing a 1280x720 OpenEXR file to "test.exr"
+</pre>
+The Nori executable echoed the property value we provided, and 
+it printed a brief human-readable summary of the scene.
+The rendered scene is saved as an OpenEXR file named <tt>test.exr</tt>.
+</div>
+<div class="col-md-6">
+	<div class="thumbnail">
+		<a class="fancybox" href="images/green.png"><img src="images/green.png"/></a>
+		<div class="caption">
+			Secondly, a solid green window pops up. This is the image we just
+			rendered! The slider at the bottom can be used to change
+			the camera exposure value.
+		</div>
+	</div>
+</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<h4>Visualizing OpenEXR files</h4>
+		<p>
+		A word of caution: various tools for visualizing OpenEXR images exist,
+		but not all really do what one would expect. Adobe Photoshop and the <a
+	  href="https://bitbucket.org/edgarv/hdritools/downloads">HDRITools</a> by
+  Edgar Velázquez-Armendáriz work correctly, but <tt>Preview.app</tt> on Mac OS
+  for instance tonemaps these files in an awkward and unclear way.
+	  </p>
+
+	  <p>
+		If in doubt, you can also use Nori as an OpenEXR viewer: simply run it with an EXR file as parameter, like so:
+		</p>
+<pre class="prettyprint lang-bash">
+$ ./nori test.exr
+</pre>
+		<h4>Tracing rays</h4>
+		<p>
+			Let's now build a more interesting integrator which traces some rays against the scene geometry. Change the file <tt>normals.cpp</tt> as follows:
+<pre class="prettyprint lang-cpp">
+</pre>
+		</p>
+
 	</div>
 </div>
 </div>
