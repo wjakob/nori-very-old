@@ -86,18 +86,18 @@ The remainder of this section describes the steps needed to clone and compile th
 	<h3>Cloning using the command line</h3>
 	<p>
 		The source code of Nori is available on <a
-		href="https://github.com/wjakob/nori2">github</a>.
+		href="https://github.com/wjakob/nori">github</a>.
 		To check out a copy of the source code, enter
 	</p>
 	<pre class="prettyprint lang-bash">
 $ git clone --recursive
-	https://github.com/wjakob/nori2</pre>
+	https://github.com/wjakob/nori</pre>
 	<p>
 		on the terminal. The <tt>--recursive</tt> flags ensures
 		that all dependency libraries are cloned as well.
 		We'll likely publish extensions and bug-fixes to this
 		repository as the semester progresses. To get them, 
-		navigate into the <tt>nori2</tt>directory and run the command
+		navigate into the <tt>nori</tt>directory and run the command
 <pre class="prettyprint lang-bash">
 $ git pull</pre>
 		If there were any concurrent modifications to the same file,
@@ -131,17 +131,61 @@ $ git pull</pre>
 </div>
 <div class="row col-md-12">
 	<div class="alert alert-danger" role="alert"><b>Note</b>: Please do not
-		share your solutions online (in particular, don't fork the <tt>nori2</tt> project on github or elsewhere).
+		share your solutions online (in particular, don't fork the <tt>nori</tt> project on github or elsewhere).
 		You can benefit from all git features using your local copy, which acts as a full-fledged git repository.
 	</div>
 </div>
 
 <div class="row col-md-12">
-<h3>Part 2: Setting up a C++ compiler and CMake</h3>
+<h3>Part 2: Setting up a C++ compiler and building the base code</h3>
+<div class="row">
+	<div class="col-md-6">
+		<h3>Linux / Mac OS X</h3>
+		<p>
+		Begin by installing 
+		<a href="http://www.cmake.org/download/">CMake</a>. 
+		Navigate to the Nori folder, make a build directory a
+		</p>
+	</div>
+	<div class="col-md-6">
+		<h3>Windows / Visual Studio 2013</h3>
+		<p>
+		Begin by installing Visual Studio 2013 (older versions won't do) and a
+		reasonably recent (≥ 3.x) version of <a href="http://www.cmake.org/download/">CMake</a>. Start CMake and navigate to the location where
+		you cloned the Nori repository.
+		</p>
+		<div class="row-centered">
+			<div class="thumbnail col-md-7 col-centered">
+				<a class="fancybox" href="images/cmake-windows.png"><img src="images/cmake-windows.png"/></a>
+				<div class="caption">
+					Be sure to select the Visual Studio 2013 <b>64</b> bit compiler.
+					It is also generally a good idea to choose a build directory
+					that is <em>different</em> from the source directory.
+				</div>
+			</div>
+		</div>
+		<p>
+		After setting up the project, click the <em>Configure</em> and
+		<em>Generate</em> button. This will create a file called
+		<tt>nori.sln</tt>—double-click it to open Visual Studio.
+		</p>
+
+		<div class="row-centered">
+			<div class="thumbnail col-md-7 col-centered">
+				<a class="fancybox" href="images/vs2013.png"><img src="images/vs2013.png"/></a>
+				<div class="caption">
+					The opened Visual Studio 2013 project. It's a good idea to
+					set the build mode to <em>Release</em> (see the red marker)
+					unless you are tracking down a particular bug. The debug
+					version runs <em>much slower</em> (by a factor of 50 or
+					more).
+				</div>
+			</div>
+		</div>
+
+	</div>
 </div>
 
-<div class="row col-md-12">
-<h3>Part 3: Building the Nori base code</h3>
 </div>
 
 <div class="row col-md-12">
@@ -467,17 +511,26 @@ NORI_NAMESPACE_BEGIN
 class NormalIntegrator : public Integrator {
 public:
     NormalIntegrator(const PropertyList &amp;props) {
-        std::string myProperty = props.getString("myProperty");
-        std::cout &lt;&lt; "Parameter value was : " &lt;&lt; myProperty &lt;&lt; endl;
+        m_myProperty = props.getString("myProperty");
+        std::cout &lt;&lt; "Parameter value was : " &lt;&lt; m_myProperty &lt;&lt; endl;
     }
 
+    /// Compute the radiance value for a given ray. Just return green here
     Color3f Li(const Scene *scene, Sampler *sampler, const Ray3f &amp;ray) const {
         return Color3f(0, 1, 0);
     }
 
+    /// Return a human-readable description for debugging purposes
     std::string toString() const {
-        return "NormalIntegrator[]";
+        return tfm::format(
+            "NormalIntegrator[\n"
+            "  myProperty = \"%s\"\n"
+            "]",
+            m_myProperty
+        );
     }
+protected:
+    std::string m_myProperty;
 };
 
 NORI_REGISTER_CLASS(NormalIntegrator, "normals");
@@ -529,7 +582,9 @@ $ ./nori test.xml
 Property value was : Hello!
 
 Configuration: Scene[
-  integrator = NormalIntegrator[],
+  integrator = NormalIntegrator[
+    myProperty = "Hello!"
+  ],
   sampler = Independent[sampleCount=1]
   camera = PerspectiveCamera[
     cameraToWorld = [1, 0, 0, 0;
@@ -542,6 +597,7 @@ Configuration: Scene[
     focusDistance = 10000.000000,
     clip = [0.000100, 10000.000000],
     rfilter = GaussianFilter[radius=2.000000, stddev=0.500000]
+
   ],
   medium = null,
   envEmitter = null,
@@ -586,11 +642,52 @@ $ ./nori test.exr
 </pre>
 		<h4>Tracing rays</h4>
 		<p>
-			Let's now build a more interesting integrator which traces some rays against the scene geometry. Change the file <tt>normals.cpp</tt> as follows:
-<pre class="prettyprint lang-cpp">
-</pre>
+		Let's now build a more interesting integrator which traces some rays against the scene geometry. Change the file <tt>normals.cpp</tt> as shown on the left side. Invoke <tt>nori</tt> on the file <tt>scenes/pa1/ajax-normals.xml</tt>, and you should get the image on the right. Please submit the resulting EXR file with the first programming assignment solutions to receive credit for making it all the way through the tutorial.
 		</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<pre class="prettyprint lang-cpp">
+#include &lt;nori/integrator.h&gt;
+#include &lt;nori/scene.h&gt;
 
+NORI_NAMESPACE_BEGIN
+
+class NormalIntegrator : public Integrator {
+public:
+    NormalIntegrator(const PropertyList &amp;props) {
+        /* No parameters this time */
+    }
+
+    Color3f Li(const Scene *scene, Sampler *sampler, const Ray3f &amp;ray) const {
+        /* Find the surface that is visible in the requested direction */
+        Intersection its;
+        if (!scene-&gt;rayIntersect(ray, its))
+            return Color3f(0.0f);
+
+        /* Return the component-wise absolute
+           value of the shading normal as a color */
+        Normal3f n = its.shFrame.n.cwiseAbs();
+        return Color3f(n.x(), n.y(), n.z());
+    }
+
+    std::string toString() const {
+        return "NormalIntegrator[]";
+    }
+};
+
+NORI_REGISTER_CLASS(NormalIntegrator, "normals");
+NORI_NAMESPACE_END
+</pre>
+</div>
+<div class="col-md-6">
+	<div class="thumbnail">
+		<a class="fancybox" href="images/normals.png"><img src="images/normals.png"/></a>
+		<div class="caption">
+			A shading normal rendering of the Ajax scene
+		</div>
 	</div>
+</div>
 </div>
 </div>
