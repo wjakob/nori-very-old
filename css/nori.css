@@ -97,18 +97,19 @@ span[rel~="tooltip"] {
 .dec { color: #98fb98 } /* decimal         - lightgreen */
 
 ol.linenums {
-  margin: 0 0 0 33px; /* IE indents via margin-left */
+  margin: 0 0 0 33px;
 } 
-
 ol.linenums li {
-  padding-left: 15px;
   color: #bbb;
   line-height: 18px;
   text-shadow: 0 1px 0 #000;
+  margin: 0 0 0 -33px;
 }
 
 .prettyprint.linenums {
-	box-shadow: inset 40px 0 0 #333, inset 41px 0 0 #777;
+  -webkit-box-shadow: inset 40px 0 0 #333, inset 41px 0 0 #777;
+     -moz-box-shadow: inset 40px 0 0 #333, inset 41px 0 0 #777;
+          box-shadow: inset 40px 0 0 #333, inset 41px 0 0 #777;
 }
 
 body {
@@ -130,4 +131,24 @@ h2 {
 h3 {
 	font-weight:bold;
 	font-size: 18px;
+}
+
+.alert {
+  margin-top:10px;
+  background-color: #dba;
+  border-color: #ca9;
+  color: #333;
+  text-shadow:none;
+}
+
+.table>thead>tr>th, 
+.table>tbody>tr>th, 
+.table>tfoot>tr>th, 
+.table>thead>tr>td, 
+.table>tbody>tr>td, 
+.table>tfoot>tr>td,
+.table>tbody,
+.table>thead,
+.table>tfoot{
+  border-color: #888 !important;
 }
