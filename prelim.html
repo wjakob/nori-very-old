@@ -59,7 +59,7 @@ for a single-user workflow:
 		every major feature (e.g. area light support or multiple importance
 		sampling). Once the feature is fully realized and bug-free, it can be
 		merged into the main branch. You'll have to implement multiple features
-		for the final project, and it's a good idea to to temporarily separate
+		for the final project, and it's a good idea to temporarily separate
 		them from each other in this way.
 	</li>
 	<li>
@@ -142,10 +142,48 @@ $ git pull</pre>
 	<div class="col-md-6">
 		<h3>Linux / Mac OS X</h3>
 		<p>
-		Begin by installing 
-		<a href="http://www.cmake.org/download/">CMake</a>. 
-		Navigate to the Nori folder, make a build directory a
+		Begin by installing the
+		<a href="http://www.cmake.org/download/">CMake</a> build system on your
+		system. On Mac OS X, you will also need to install a reasonably
+		up-to-date version of XCode along with the command line tools.
+		On Linux, any reasonably recent version of GCC or Clang will work.
+		Navigate to the Nori folder, create a build directory and start <tt>cmake-gui</tt>, like so:
 		</p>
+		<pre class="prettyprint lang-bash">
+$ cd path-to-nori
+$ mkdir build
+$ cd build
+$ cmake-gui ..</pre>
+		<div class="row-centered">
+			<div class="thumbnail col-md-7 col-centered">
+				<a class="fancybox" href="images/linux-cmake.png"><img src="images/linux-cmake.png"/></a>
+				<div class="caption">
+					Set the build type to "Unix Makefiles"
+					and then press the <em>Configure</em>
+					and <em>Generate</em> buttons.
+				</div>
+			</div>
+		</div>
+		After the Makefiles are generated, simply run
+		<tt>make</tt> to compile all dependencies and Nori itself.
+		<pre class="prettyprint lang-bash">
+$ make -j 4</pre>
+		This can take quite a while; the above command compiles with four
+		processors at the same time. Note that you will probably see many
+		warning messages while the dependencies are compiled—you can ignore
+		them.
+
+		<div class="row-centered">
+			<div class="thumbnail col-md-7 col-centered">
+				<a class="fancybox" href="images/build-type-linux.png"><img src="images/build-type-linux.png"/></a>
+				<div class="caption">
+					Tip: it's a good idea to set the build mode to <em>Release</em>
+					unless you are tracking down a particular bug. The debug
+					version runs <em>much slower</em> (by a factor of 50 or
+					more).
+				</div>
+			</div>
+		</div>
 	</div>
 	<div class="col-md-6">
 		<h3>Windows / Visual Studio 2013</h3>
@@ -182,7 +220,11 @@ $ git pull</pre>
 				</div>
 			</div>
 		</div>
-
+		The <em>Build->Build Solution</em> menu item will automatically compile
+		all dependency libraries and Nori itself; the resulting executable is
+		written to the <tt>Release</tt> or <tt>Debug</tt> subfolder of your
+		chosen build directory. Note that you will probably see many warning
+		messages while the dependencies are compiled—you can ignore them.
 	</div>
 </div>
 
@@ -492,7 +534,7 @@ void Mesh::addChild(NoriObject *obj) {
     &lt;/bsdf&gt;
 &lt;/test&gt;</pre>
 		
-		<h3>Creating your your first Nori class</h3>
+		<h3>Creating your first Nori class</h3>
 		<p>
 			In Nori, rendering algorithms are referred to as <em>integrators</em>
 			because they generally solve a numerical integration problem. The remainder
