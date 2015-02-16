@@ -3,9 +3,15 @@
 		$('html,body').animate({scrollTop:$(this.hash + "-header").offset().top}, 500);
 	});
 
-	$("#prelim-body").load("prelim.html", function() { prettyPrint(); });
-	$("#pa1-body").load("pa1.html");
-	$("#pa2-body").load("pa2.html");
+	prettify = function() {
+		$("code").addClass("prettyprint");
+		$("code").addClass("lang-cpp");
+		prettyPrint();
+	};
+
+	$("#prelim-body").load("prelim.html", prettify);
+	$("#pa1-body").load("pa1.html", prettify);
+	$("#pa2-body").load("pa2.html", prettify);
 
 	$(".fancybox").fancybox();
 

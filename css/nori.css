@@ -68,21 +68,22 @@ span[rel~="tooltip"] {
   border-bottom: 1px solid #868867
 }
 
-.dark { 
-  background-color: #444; 
-  padding: 8px;
-  border: 1px solid #000;
-  color: #fff;
-  text-shadow: 0 1px 0 #000;
-}
 
 /* Syntax-highlighting related CSS directives.
   'desert' scheme ported from vim to google prettify */
-.prettyprint { 
-  background-color: #333; 
+pre.prettyprint { 
   padding: 8px;
-  border: 1px solid #555;
+  border: 1px solid #000;
+  background-color: #333; 
+  text-shadow: 0 1px 0 #000;
 }
+code.prettyprint { 
+	background: #686959;
+	padding: 2px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
 .nocode { background-color: none; color: #000; }
 .str { color: #ffa0a0 } /* string  - pink */
 .kwd { color: #f0e68c; font-weight: bold }
@@ -107,9 +108,7 @@ ol.linenums li {
 }
 
 .prettyprint.linenums {
-  -webkit-box-shadow: inset 40px 0 0 #333, inset 41px 0 0 #777;
-     -moz-box-shadow: inset 40px 0 0 #333, inset 41px 0 0 #777;
-          box-shadow: inset 40px 0 0 #333, inset 41px 0 0 #777;
+	box-shadow: inset 40px 0 0 #333, inset 41px 0 0 #777;
 }
 
 body {

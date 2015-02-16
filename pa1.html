@@ -2,36 +2,64 @@
 <h3>Part 1: Average Visibility Integrator <em>(xx points)</em></h3>
 <div class="text-justify">
 <p>
-	In this exercise you will implement a new integrator <tt>nori::AV</tt> which derives from <tt>nori::Integrator</tt>. This integrator will be used to visualize the average visibility at the first camera intersection with geometry while ignoring the actual material parameters (<tt>BSDF</tt>). 
+	In this exercise you will implement a new integrator named
+	<tt>AverageVisibility</tt> (bound to the name "<tt>av</tt>" in the XML
+	scene description language) which derives from <tt>Integrator</tt> to
+	visualize the average visibility of surface points seen by a
+	camera, while ignoring the actual material parameters (i.e. the surface's
+	<tt>BSDF</tt>). 
 </p>
-
-	<h4>Uniform Sphere Sampling <em>(xx points)</em></h4>
-	<p>
-		Implement a new method which takes a <tt>nori::Sampler *</tt> as a parameter and will return a uniformly distributed random <tt>Point3f</tt> on the surface of a unit sphere (i.e. radius of 1). A naive method to generate such a point is by using rejection sampling and then projection. First you can generate a uniform point within a unit cube (from [-1,-1,-1] to [1,1,1]). Points generated outside the unit sphere are rejected whereas points inside the unit sphere are accepted.
-	</p>
-
-	<h4>Uniform Hemisphere Sampling <em>(xx points)</em></h4>
-	<p>
-		Implement a new method which takes a nori::Sampler * and a Normal and returns a uniformly distributed random Point3f on the surface of a unit hemisphere (radius of 1) with its north pole collocated with the Normal given as parameter.
-	</p>
 
 	<h4>Implement Average Visibility Integrator <em>(xx points)</em></h4>
 	<p>
-		This function will be called multiple times for each camera ray and will be internally averaged by nori. First find if the camera ray given as a parameter intersects an object using <tt>scene->rayIntersect(const Ray3f ray,Intersection & its)</tt>. If nothing is intersected return black. In the case where an intersection was found you must now compute the average visibility. Using the intersection point <tt>its.p</tt> and the world space shading normal <tt>its.shFrame.n</tt>  and sampler you can generate a uniformly distributed ray on the defined hemisphere. This function should return 0 if the new ray is occluded and 1 otherwise.
+	Take a look at the <tt>Warp</tt> class in <tt>include/nori/warp.h</tt> and <tt>src/warp.cpp</tt>. Currently, it just implements a single function
 	</p>
+<pre class="prettyprint">
+Vector3f uniformSampleHemisphere(Sampler *sampler, const Normal3f &n);
+</pre>
+<p>
+	which takes a pointer to a <tt>Sampler</tt> and a normal direction and returns
+	a uniformly distributed random vector on the surface of a unit hemisphere (of
+	radius 1) oriented in the direction of the normal.
+</p>
+<p>
+	Please use this function to implement a new kind of integrator, which
+	computes the average visibility at every surface point visible to the
+	camera. This should be implemented as follows: First find the surface
+	intersected by the camera ray as was done in the previous example.
+	When there is no intersection, return <code>Color3f(1.0f)</code>. Otherwise,
+	you must now compute the average visibility. Using the intersection point
+	<code>its.p</code>, the world space shading normal <code>its.shFrame.n</code>,
+	and the provided sampler, generate a point on the hemisphere and trace a
+	ray into this direction. The ray should have a user-specifiable
+	length that can be passed via an XML declaration as follows:
+<pre class="prettyprint">
+&lt;integrator type="av"&gt;
+    &lt;float name="length" value="... ray length ..."/&gt;
+&lt;/integrator&gt;
+</pre>
+	The integrator should return <code>Color3f(0.0f)</code> if the ray segment is
+	occluded and <code>Color3f(1.0f)</code> otherwise.
+</p>
 
 	<h4>Validation <em>(xx points)</em></h4>
 	<p>
-		Some test to implement...
+		The directory <tt>scenes/pa1</tt> contains several example scenes that you
+		can use to try your implementation. These scenes invoke your integrator many
+		times for each pixel, and the (random) binary visibility values are accumulated
+		to approximate the average visibility of surface points. Make sure that you can
+		reproduce the images in
+		<tt>scenes/pa1/ajax-av.xml</tt> and <tt>scenes/pa1/sponza-av.xml</tt>
+		and pass the testcase <tt>scenes/pa1/test-av.xml</tt>.
 	</p>
 
 <h3>Part 2: Direct Illumination Integrator <em>(xx points)</em></h3>
 
 	<h4>Point Lights <em>(xx points)</em></h4>
-	Before starting, read section 12.2 in the textbook about point lights. Implement a <tt>nori::PointLight</tt> class which derives from <tt>nori::Emitter</tt> and implements an infinitesimal light source which emits light uniformly in all directions. Point lights should be instantiated by the parser during the loading of the scene and will be used by your various integrators during render time. Parametrize your point light with a <tt>Color3f</tt> power (Watts) and the world space position of the point light. Implement a new method in <tt>PointLight</tt> class which returns incident radiance at an intersection (given as a parameter) from this point light. 
+	Before starting, read section 12.2 in the textbook about point lights. Implement a <tt>PointLight</tt> class which derives from <tt>Emitter</tt> and implements an infinitesimal light source which emits light uniformly in all directions. Point lights should be instantiated by the parser during the loading of the scene and will be used by your various integrators during render time. Parametrize your point light with a <tt>Color3f</tt> power (Watts) and the world space position of the point light. Implement a new method in <tt>PointLight</tt> class which returns incident radiance at an intersection (given as a parameter) from this point light. 
 
 	<h4>Direct Illumination integrator <em>(xx points)</em></h4>
-	<tt>nori::Direct::Li</tt> will be called multiple times for each camera ray and will be internally averaged by nori. Its expected to return a one sample estimate of the incident radiance along the camera <tt>Ray3f</tt> which is given as a parameter. The equation which will be solved (15.1) is defined in the textbook in chapter 15 page 744. For the purposes of this exercise you can safely assume that there will be no emission at the first intersection. At the first camera ray intersection compute incident radiance from all your point lights in the scene, multiply that by the BSDF and a cosine term. 
+	<tt>Direct::Li</tt> will be called multiple times for each camera ray and will be internally averaged by nori. Its expected to return a one sample estimate of the incident radiance along the camera <tt>Ray3f</tt> which is given as a parameter. The equation which will be solved (15.1) is defined in the textbook in chapter 15 page 744. For the purposes of this exercise you can safely assume that there will be no emission at the first intersection. At the first camera ray intersection compute incident radiance from all your point lights in the scene, multiply that by the BSDF and a cosine term. 
 
 	<h4>Validation <em>(xx points)</em></h4>
 	<p>
@@ -47,11 +75,11 @@
 
 <h3> Hacker Points <em>(xx points)</em></h3>
 
-	<div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points for the daring few. Sometimes you might be required to implement something that was not taught in class and will you will have to do some research and creative thinking. Hacker Points are awarded only to students who implemented 100% of the remaining normal assignment points.
+	<div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points for the daring few. Sometimes you might be required to implement something that was not taught in class and will you will have to do some research and creative thinking. Hacker Points are awarded only to students who implemented 100% of the normal assignment points.
 	</div>
 
 	<p> 
-	The goal of this exercise is to improve the performance of the current acceleration structure (<tt>nori::BVH</tt>) during render time. You are given a scene (<tt>./scenes/sponza.xml</tt>) which should use xx.xx ray-triangle intersections per ray camera ray for the <tt>nori::AV</tt> integrator. Your goal is to reduce that number without  changing the rendered result and detail in your report your changes and their individual impact during render time and construction time.
+	The goal of this exercise is to improve the performance of the current acceleration structure (<tt>BVH</tt>) during render time. You are given a scene (<tt>./scenes/sponza.xml</tt>) which should use xx.xx ray-triangle intersections per ray camera ray for the <tt>AverageVisibility</tt> integrator. Your goal is to reduce that number without  changing the rendered result and detail in your report your changes and their individual impact during render time and construction time.
 	</p>
 
 </div>
