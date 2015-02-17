@@ -1,6 +1,6 @@
 <div style="margin-top:-20px">
 
-<h3>Part 1: Normal Integrator <em>(35 points)</em></h3>
+<h3>Part 1: Normal Integrator <em>(30 points)</em></h3>
 <div class="text-justify">
 <p>
 	Follow the <a href=#prelim>preliminaries</a> step-by-step guide. Compule nori and create 
@@ -9,7 +9,7 @@
 	<tt>scenes/pa1/ref/ajax-normal.exr</tt> in your report.
 </p>
 
-<h3>Part 2: Average Visibility Integrator <em>(20 points)</em></h3>
+<h3>Part 2: Average Visibility Integrator <em>(30 points)</em></h3>
 <div class="text-justify">
 <p>
 	In this exercise you will implement a new integrator named
@@ -20,7 +20,7 @@
 	<tt>BSDF</tt>). 
 </p>
 
-	<h4>Implement Average Visibility Integrator <em>(10 points)</em></h4>
+	<h4>Implement Average Visibility Integrator <em>(20 points)</em></h4>
 	<p>
 	Take a look at the <tt>Warp</tt> class in <tt>include/nori/warp.h</tt> and <tt>src/warp.cpp</tt>. 
 	Currently, it just implements a single function
@@ -65,9 +65,9 @@ Vector3f uniformSampleHemisphere(Sampler *sampler, const Normal3f &n);
 		Finally provide a side by side comparison with the reference images in your report.
 	</p>
 
-<h3>Part 3: Direct Illumination Integrator <em>(35 points)</em></h3>
+<h3>Part 3: Direct Illumination Integrator <em>(40 points)</em></h3>
 
-	<h4>Point Lights <em>(10 points)</em></h4>
+	<h4>Point Lights <em>(15 points)</em></h4>
 	Before starting, read section 12.2 in the textbook about point lights.
 	Implement a <tt>PointLight</tt> class which derives from <tt>Emitter</tt>
 	and implements an infinitesimal light source which emits light uniformly in
