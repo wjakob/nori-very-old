@@ -554,7 +554,7 @@ class NormalIntegrator : public Integrator {
 public:
     NormalIntegrator(const PropertyList &amp;props) {
         m_myProperty = props.getString("myProperty");
-        std::cout &lt;&lt; "Parameter value was : " &lt;&lt; m_myProperty &lt;&lt; endl;
+        std::cout &lt;&lt; "Parameter value was : " &lt;&lt; m_myProperty &lt;&lt; std::endl;
     }
 
     /// Compute the radiance value for a given ray. Just return green here
