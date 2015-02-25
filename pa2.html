@@ -1,4 +1,4 @@
-<div style="margin-top:-20px">
+<div style="margin-top:-20px; text-align:justify">
 	<h3>Preliminaries</h3>
 	<p>
 		In this exercise you will generate sample points on various domains:
@@ -76,9 +76,7 @@
 		</div>
 	</div>
 
-</div>
 
-<div class="text-justify">
 	<h3>Part 1: Sample Warping <em>(XX points)</em></h3>
 	<p>
 		Implement the missing functions in <code>class Warp</code> found in
@@ -199,17 +197,10 @@
 		</li>
 
 	</ul>
-</div>
-
-<div>
-	<h3>Part 3: Validation <em>(XX points)</em></h3>
-	<h4>\(\chi^2\) tests<em>(15 points)</em></h4>
+	<h3>Part 2: Validation <em>(15 points)</em></h3>
 	<p>
+		Pass all \(\chi^2\) tests of the above warpings and include screen shots in your report.
 	</p>
-</div>
-
-
-<div>
 <h3> Hacker Points: Hierarchical Sample Warping <em>(XX points)</em></h3>
 
 	<div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points 
@@ -218,39 +209,84 @@
 	implemented all of the remaining assignment. In addition Hacker Points are either fully awarded or not awarded at all.
 	</div>
 
-	<div>
-		<p> 
-			The goal of this exercise is to implement hierarchical sample warping. As input a non-negative greyscale image is given. This image should be used to define the PDF of samples distributed on a 2D rectangular domain. The density should increase linearly with respect to the pixel value of the image.
-		</p>
-	</div>
-
-	<div class="thumbnail col-md-15">
-		<a class="fancybox" href="images/hsw.png"><img src="images/hsw.png"/></a>
-		<div class="caption">
-			Hierarchical Sample Warping example with a 2x2 pixel image.
+	<div class="row" style="margin: 30px">
+		<div class="row-centered">
+		<div class="col-md-3 col-centered">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/envmap-1.jpg"><img src="images/envmap-1.jpg"/></a>
+				<div class="caption">
+					A lightprobe by <a href="http://dativ.at/lightprobes/">Bernhard Vogl</a>.
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3 col-centered">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/envmap-2.jpg"><img src="images/envmap-2.jpg"/></a>
+				<div class="caption">
+					A simple scene rendered with this lightprobe.
+				</div>
+			</div>
+		</div>
 		</div>
 	</div>
+
+	<p> 
+		The goal of this exercise is to implement hierarchical sample warping,
+		which will come in very handy if you decide you'll want to later add
+		<a href="http://ict.usc.edu/pubs/Image-Based%20Lighting.pdf">Image Based Lighting</a> (IBL)
+		to your renderer for the final project. Lighting with captured
+		real-world lighting conditions ("<em>lightprobes</em>") is a
+		relatively cheap and simple way to add considerable realism to a
+		rendering. Note that we don't expect you to add the rendering-related
+		parts yet; this exercise is just about the warping scheme.
+	</p>
+	<p>
+		You can assume that a non-negative grayscale image is given as an
+		input (this image records the per-pixel luminance values of an IBL
+		light probe). The image is interpreted as a probability density of
+		samples distributed on a 2D rectangular domain, hence the goal is to
+		generate samples proportionally to these luminance values.
+		Strictly speaking, the image is not really a density function because
+		it does not integrate to one—we simply apply a normalization factor
+		to circumvent this problem.
+	</p>
+
 
 	<div>
 		<p>
 			Hierarchical Sample Warping works as follows: 
 			<ul>
-				<li> Input: greyscale image (PDF) and N samples uniformly distributed on the rectangular domain.</li>
-				<li> Sub-divide the image in two halfs and sum up the values in each part. </li>
-				<li> Warp the samples given as input such that the number of samples allocated to each part is linearly related to the corresponding sum of that region in the image.</li>
-				<li> Repeat the steps above for the other axis. </li>
-				<li> Finally recursively repeat these two steps for each quadrant until the process cannot sub-divide the image anymore.</li>
+				<li> Input: grayscale image and \(N\) samples uniformly distributed on the unit square.</li>
+				<li> Subdivide the image in two equal-sized parts along the \(x\)-axis and sum up the luminance values in each part. </li>
+				<li> Warp input sample set along the \(x\) axis such that the
+					number of samples allocated to each part matches ratio of
+					the summed luminance computed in the last step.</li>
+				<li> Repeat the steps above for the \(y\)-axis. </li>
+				<li> Recursively repeat these two steps for each quadrant until the process cannot sub-divide the image anymore.</li>
 			</ul>
+			You will want to use a data structure such as a quad-tree to accelerate the second step.
 		</p>
+	</div>
+	<div class="row-centered">
+		<div class="thumbnail col-md-5 col-centered">
+			<a class="fancybox" href="images/hsw.png"><img src="images/hsw.png"/></a>
+			<div class="caption">
+				Hierarchical Sample Warping example with a 2x2 pixel image.
+			</div>
+		</div>
 	</div>
 	
 	<h4> What to submit </h4>
 	<p>
 		<ul>
-			<li> A correct implementation of the HSW algorithm described above. </li> 
-			<li> A modified version of the warptest GUI that visualizes your points and the input PDF. </li> 
-			<li> Two examples in your report and modified GUI. First is with the 4 pixel image shown above and second should be your favorite probe from <a href="http://gl.ict.usc.edu/Data/HighResProbes/"> here</a></li> 
-			<li> A \(\chi^2\) test that verifies that your sample distribution agrees with the input PDF. </li> 
+			<li> A correct implementation of the hierarchical sample warping algorithm described above. </li> 
+			<li> A modified version of the <tt>warptest</tt> user interface that visualizes your generated points sets.</li> 
+			<li> Two screen shot of the \(\chi^2\)-test, which verifies that your warping function and density function are mutually consistent.
+				The first should be with a simple
+				2x2 pixel image as shown above, and for the second, you can choose any
+				light probe you like (<a href="http://gl.ict.usc.edu/Data/HighResProbes/">Paul Debevec</a> and
+				<a href="http://dativ.at/lightprobes/">Bernhard Vogl</a> provide many light probes free of charge).
+			</li>
 		</ul>
 	</p>
 
