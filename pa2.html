@@ -113,7 +113,7 @@
 				the <em>unit sphere</em> centered at the origin. Implement a matching
 				probability density function.
 				<div class="alert alert-info" role="alert">
-					You could save some time by implementing a new <code>Warp::squareToUniformCylinder</code>
+					<b>Hint</b>: You could save some time by implementing a new <code>Warp::squareToUniformCylinder</code>
 					function and use the hat-box theorem discussed in class to solve not only this problem,
 					but also the following two.
 				</div>
@@ -158,31 +158,37 @@
 		<li>
 			<h4><code>Warp::squareToBeckmann</code> and <code>Warp::squareToBeckmannPdf</code> <em> (10 Points)</em></h4>
 			<p>
-				Transform your 2D point to a point distributed on the unit hemisphere with a cosine weighted Beckmann density function: </br>
+				Transform your 2D point to a point distributed on the unit
+				hemisphere with a cosine weighted Beckmann density function (we
+				will describe applications of this distribution in class soon).
+				Including the cosine weighting, this distribution is given by the following expression:
 				\[
-					p(\theta,\phi) = D(\theta) \cos{\theta} = \frac{e^{\frac{-\tan^2{\theta}}{\alpha^2}}}{\pi \alpha^2 \cos^4 \theta }\cos \theta
+					p(\theta,\phi) = D(\theta) \cos{\theta} = \frac{e^{\frac{-\tan^2{\theta}}{\alpha^2}}}{\pi\, \alpha^2 \cos^4 \theta }\cos \theta
 				\]
-				Where \(\alpha\) is a user specified roughness parameter and \(\theta\) is the angle between the north pole of the hemisphere and the 
-				direction which was sampled.
+				Where \(\alpha\) is a user specified roughness parameter and
+				\(\theta\) is the angle between a direction on the hemisphere
+				and the north pole.
 
 				<ul>
 					<li> 
-						Compute the CDF \(P(\theta,\phi)\) of \(p(\theta,\phi)\) and use that to compute the integral of \(p(\theta,\phi)\) over the entire hemisphere:
+						Begin by computing the cumulative distribution \(P(\theta,\phi)\) of \(p(\theta,\phi)\) and use that to compute the integral of \(p(\theta,\phi)\) over the entire hemisphere, i.e.:
 						\[
 							I = P(\pi/2,2\pi) = \int_0^{2\pi} \int_0^{\frac{\pi}{2}} p(\theta,\phi) \sin{\theta} ~ d\theta ~ d\phi
 						\]
 						Verify that your result integrates to 1. Show your steps in your report. 
 
-							<div class="alert alert-info" role="alert"><b>Hint</b>: You can use the following substitutions \(x = \cos{\theta}\) and \(tan^2{\theta} = \frac{1-x^2}{x^2}\). In addition you can find this identity useful: 
-									\(
-										\int f'(x) ~ e^{~f(x)} dx = e^{~f(x)} + C
-									\)
+							<div class="alert alert-info" role="alert"><b>Hint</b>: You might find integration by substitution useful,
+								e.g. using the mappings \(x = \cos{\theta}\) and \(\tan^2{\theta} = \frac{1-x^2}{x^2}\).
+								In addition this identity might come in handy: 
+									\[
+									\int f'(x) ~ e^{~f(x)} dx = e^{~f(x)} + C\text{, where } C\in\mathbb{R}
+									\]
 							</div>
 
 					</li>
 					<li>
-						Compute the CDF \(P(\theta,\phi)\) of \(p(\theta,\phi)\) and invert it \(P^{-1}(x,y)\). Given \(P^{-1}(x,y)\) show your equations for computing a 2D point on a hemisphere \((\theta,\phi)\) from two uniform random numbers \((x,y) \in [0,1) \)
-						with a cosine weighted Beckman density function \(p(\theta,\phi)\). Show your steps.
+						Now use the recipe discussed in class to invert the CDF and turn it into a method for sampling points
+						that match the Beckmann distribution. Show your steps.
 					</li>
 					<li> 
 						Implement <code>Warp::squareToBeckmann</code> and <code>Warp::squareToBeckmannPdf</code> <em>
