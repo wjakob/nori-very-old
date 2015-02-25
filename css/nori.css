@@ -132,12 +132,20 @@ h3 {
 	font-size: 18px;
 }
 
-.alert {
+.alert-danger {
   margin-top:10px;
   background-color: #dba;
   border-color: #ca9;
   color: #333;
   text-shadow:none;
+}
+
+.alert-info {
+  margin-top:10px;
+  border-color: #868867;
+  color: #333;
+  text-shadow:none;
+  background-color: #f4f5ea;
 }
 
 .table>thead>tr>th, 
