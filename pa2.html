@@ -1,98 +1,168 @@
 <div style="margin-top:-20px">
 	<h3>Preliminaries</h3>
 	<p>
-		In this exercise you will generate sample points on various domains: disk, sphere, hemisphere, etc. First
-		you will set up a new visualization framework for displaying and generating the various sample points in
-		real-time. This will help you creating samples on useful domains that later on can be used to perform MC
-		integration for rendering.
+		In this exercise you will generate sample points on various domains:
+		disks, spheres, hemispheres, and a few more. The base code has been
+		extended with an interactive visualization and testing tool to make
+		working with point sets as intuitive as possible. Note that all work
+		you do in this assignment will serve as building blocks in later
+		assignments when we apply Monte Carlo integration to render images.
 	</p>
 
 	<p>
-		Get the new additions to the basecode by running <code>git pull</code>. Make sure to include them in your project 
-		by re-running cmake e.g <code>cd build; cmake ..</code>. After compiling you will see another executable named
-		<tt>warptest</tt>. When you run this you should be able to see the warp testing GUI. This GUI will allow you to 
-		change between different input point sets (independent, uniform and stratified) and also between different warping
-		methods that you will implement later on.
+		Begin by importing the base code updates into your repository by
+		running <tt>git pull</tt> and recompiling. If there were any concurrent
+		changes to the same file, you may have to perform a <em>merge</em> (see
+		the git tutorials under "Preliminaries" for more information). Once the
+		compilation finishes, you should see another executable named
+		<tt>warptest</tt>. Run this executable to launch the interactive
+		warping tool, which allows you to visualize the behavior of different
+		warping functions given a range of input point sets (independent, grid
+		and stratified).
 	</p>
+	<p>
+		This exercise is split into several parts; in each case, you will be
+		asked to implement a sample warping scheme and an associated
+		probability distribution function. It is crucial that both are
+		<em>consistent</em> with respect to each other (i.e. that warped
+		samples have exactly the distribution described by the density function
+		you implemented). Otherwise, errors would arise if we used inconsistent
+		warpings for Monte Carlo integration. The warping test tool comes with
+		a \(\chi^2\) test to check this consistency condition. 
+	</p>
+
+	<div class="alert alert-danger" role="alert">
+		Note that passing the test
+		does not generally imply that your implementation is correct—for
+		instance, the test may not have enough "evidence" to generate a
+		failure, or potentially the warping function and the density function
+		are both incorrect in the same manner. Use your judgment and don't
+		rely on this test alone.
+	</div>
+
+	<div class="row" style="margin: 30px">
+		<div class="col-md-3">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/warp-square-points.png"><img src="images/warp-square-points.png"/></a>
+				<div class="caption">
+					The input point set (stratified samples passed through a "no-op" warp function)
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/warp-square-chi2.png"><img src="images/warp-square-chi2.png"/></a>
+				<div class="caption">
+					This point set passed the test for uniformity.
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/warp-disk-points.png"><img src="images/warp-disk-points.png"/></a>
+				<div class="caption">
+					A more interesting case that you will implement
+					(with a grid visualization of the mapping)
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/warp-disk-chi2.png"><img src="images/warp-disk-chi2.png"/></a>
+				<div class="caption">
+					This warping passed the tests as well.
+				</div>
+			</div>
+		</div>
+	</div>
 
 </div>
 
 <div class="text-justify">
 	<h3>Part 1: Sample Warping <em>(XX points)</em></h3>
 	<p>
-		Implement the missing functions in <code>class Warp</code> found in <tt>src/warp.cpp</tt>. This class consists of various warp 
-		methods that take as input a 2D point \((s, t) \in [0, 1) \times [0, 1) \) (and maybe some other domain specific parameters)
-		and return the warped 2D (or 3D) point in the new domain. Each method should be accompanied by another method that returns the probability density
-		with which each sample was picked. The slides on the course website provide a recipe for warping the samples and as well as 
-		computing the PDF, and the PBR textbook provides more details.
+		Implement the missing functions in <code>class Warp</code> found in
+		<tt>src/warp.cpp</tt>. This class consists of various warp methods that
+		take as input a 2D point \((s, t) \in [0, 1) \times [0, 1) \) (and
+		maybe some other domain specific parameters) and return the warped 2D
+		(or 3D) point in the new domain. Each method is accompanied by another
+		method that returns the probability density with which a sample was
+		picked. Our default implementations all throw an exception, which shows
+		up as an error message in the graphical user interface. Note that the
+		slides on the course website provide a useful recipe for warping the
+		samples and as well as computing the densities, and the PBR textbook
+		also contains considerable information on this topic.
 	</p>
 
 	<ul>
 		<li>
-			<h4><code>Warp::squareToUniformDisc</code> and <code>Warp::squareToUniformDiscPdf</code> <em> (5 Points)</em></h4>
+			<h4><code>Warp::squareToUniformDisk</code> and <code>Warp::squareToUniformDiskPdf</code> <em> (5 Points)</em></h4>
 			<p>
-				Implement the former method which will will transform a uniform 2D point on the unit square, to a uniformly distributed point lying on a disk in the x, y plane centered at
-				(0, 0, 0) and a radius of 1. Implement the latter method which will return the PDF of the former.
+				Implement a method that transforms uniformly distributed 2D
+				points on the unit square into uniformly distributed points on
+				a planar <em>disk</em> with radius 1 centered at the origin. Next,
+				implement a probability density function that matches your
+				warping scheme.
 			</p>
 		</li>
-
-		<li>
-			<h4><code>Warp::squareToUniformCylinder</code> and <code>Warp::squareToUniformCylinderPdf</code> <em> (5 Points)</em></h4>
-			<p>
-				Transform the 2D point to a 3D point lying on the surface of a cylinder centered at (0, 0, 0), aligned with
-				the z-axis with a height of 2 and radius of 1.
-			</p>
-		</li>
-
 		<li>
 			<h4><code>Warp::squareToUniformSphere</code> and <code>Warp::squareToUniformSpherePdf</code> <em> (10 Points)</em></h4>
 			<p>
-				Transform your 2D point to a 3D point on the surface of a unit sphere centered at (0, 0, 0) with radius 1.
-				Use the hat-box theorem and your previously implemented Warp::squareToUniformCylinder function.
+				Implement a method that transforms uniformly distributed 2D
+				points on the unit square into uniformly distributed points on
+				the <em>unit sphere</em> centered at the origin. Implement a matching
+				probability density function.
+				<div class="alert alert-info" role="alert">
+					You could save some time by implementing a new <code>Warp::squareToUniformCylinder</code>
+					function and use the hat-box theorem discussed in class to solve not only this problem,
+					but also the following two.
+				</div>
 			</p>
 		</li>
-
 		<li>
-			<h4><code>Warp::squareToUniformHemisphere</code> and <code>Warp::squareToUniformHemispherePdf</code> <em> (10Points)</em></h4>
+			<h4><code>Warp::squareToUniformHemisphere</code> and <code>Warp::squareToUniformHemispherePdf</code> <em> (10 Points)</em></h4>
 			<p>
-				Using the hat-box theorem, transform a warped point from <code>Warp::squareToUniformCylinder</code> to a unit
-				hemi-sphere centered at (0, 0, 0) and a radius of 1.
+				Implement a method that transforms uniformly distributed 2D
+				points on the unit square into uniformly distributed points on
+				the <em>unit hemisphere</em> centered at the origin and oriented in
+				direction \((0, 0, 1)\). Add a matching probability density
+				function.
 			</p>
 		</li>
-
 		<li>
 			<h4><code>Warp::squareToUniformSphericalCap</code> and <code>Warp::squareToUniformSphericalCapPdf</code> <em> (10 Points)</em></h4>
 			<p>
-				Using the hat-box theorem, and a restricted range on the cylinder’s height, transform a warped point from
-				<code>Warp::squareToUniformCylinder</code> to a Spherical Cap.
+				Implement a method that transforms uniformly distributed 2D
+				points on the unit square into uniformly distributed points on
+				the <em>spherical cap</em> centered at the origin and oriented in
+				direction \((0, 0, 1)\). Add a matching probability density
+				function.
+				A spherical cap is the subset of a unit sphere whose directions
+				make an angle of less than \(\theta\) with the central direction. 
+				Note that the above functions expects \(cos\,\theta\) as a parameter.
 			</p>
 		</li>
-	</ul>
-</div>
-
-<div class="text-justify">
-	<h3>Part 2: Importance Sampling <em>(XX points)</em></h3>
-	
-	<p>
-		In this section you task is to warp the input points from the unit square to the unit hemisphere according to a predefined non-constant PDF.
-	</p>
-
-	<ul>
 		<li>
 			<h4><code>Warp::squareToCosineHemisphere</code> and <code>Warp::squareToCosineHemispherePdf</code> <em> (5 Points)</em></h4>
 			<p>
-				Transform your 2D point to a point distributed on the unit hemisphere with a cosine weighted PDF \(p(\theta)=\frac{\cos\theta}{\pi}\). Where \(\theta\) is the angle between the north pole of the hemisphere and the vector towards the current surface point.
+				Transform your 2D point to a point distributed on the unit
+				hemisphere with a cosine density function
+				\[
+				p(\theta)=\frac{\cos\theta}{\pi},
+				\]
+				where \(\theta\) is the
+				angle between a point on the hemisphere and the north pole.
 			</p>
 		</li>
 
 		<li>
 			<h4><code>Warp::squareToBeckmann</code> and <code>Warp::squareToBeckmannPdf</code> <em> (10 Points)</em></h4>
 			<p>
-				Transform your 2D point to a point distributed on the unit hemisphere with a cosine weighted Beckmann PDF: </br>
+				Transform your 2D point to a point distributed on the unit hemisphere with a cosine weighted Beckmann density function: </br>
 				\[
-					p(\theta,\phi) = D(\theta) \cos{\theta} = \frac{e^{\frac{-\tan^2{\theta}}{a_b^2}}}{\pi a_b^2 \cos^4 \theta }\cos \theta
+					p(\theta,\phi) = D(\theta) \cos{\theta} = \frac{e^{\frac{-\tan^2{\theta}}{\alpha^2}}}{\pi \alpha^2 \cos^4 \theta }\cos \theta
 				\]
-				Where \(a_b\) is a user specified roughness parameter and \(\theta\) is the angle between the north pole of the hemisphere and the 
+				Where \(\alpha\) is a user specified roughness parameter and \(\theta\) is the angle between the north pole of the hemisphere and the 
 				direction which was sampled.
 
 				<ul>
@@ -103,7 +173,7 @@
 						\]
 						Verify that your result integrates to 1. Show your steps in your report. 
 
-							<div class="alert alert-danger" role="alert"><b>Hint</b>: You can use the following substitutions \(x = \cos{\theta}\) and \(tan^2{\theta} = \frac{1-x^2}{x^2}\). In addition you can find this identity useful: 
+							<div class="alert alert-info" role="alert"><b>Hint</b>: You can use the following substitutions \(x = \cos{\theta}\) and \(tan^2{\theta} = \frac{1-x^2}{x^2}\). In addition you can find this identity useful: 
 									\(
 										\int f'(x) ~ e^{~f(x)} dx = e^{~f(x)} + C
 									\)
@@ -112,7 +182,7 @@
 					</li>
 					<li>
 						Compute the CDF \(P(\theta,\phi)\) of \(p(\theta,\phi)\) and invert it \(P^{-1}(x,y)\). Given \(P^{-1}(x,y)\) show your equations for computing a 2D point on a hemisphere \((\theta,\phi)\) from two uniform random numbers \((x,y) \in [0,1) \)
-						with a cosine weighted Beckman PDF \(p(\theta,\phi)\). Show your steps.
+						with a cosine weighted Beckman density function \(p(\theta,\phi)\). Show your steps.
 					</li>
 					<li> 
 						Implement <code>Warp::squareToBeckmann</code> and <code>Warp::squareToBeckmannPdf</code> <em>
@@ -135,7 +205,7 @@
 <div>
 <h3> Hacker Points: Hierarchical Sample Warping <em>(XX points)</em></h3>
 
-	<div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points 
+	<div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points 
 	for the daring few. Sometimes you might be required to implement something that was not taught in class and 
 	you might have to do some research and creative thinking. Hacker Points are awarded only to students who 
 	implemented all of the remaining assignment. In addition Hacker Points are either fully awarded or not awarded at all.
