@@ -191,7 +191,7 @@
 						that match the Beckmann distribution. Show your steps.
 					</li>
 					<li> 
-						Implement <code>Warp::squareToBeckmann</code> and <code>Warp::squareToBeckmannPdf</code> <em>
+						Implement <code>Warp::squareToBeckmann</code> and <code>Warp::squareToBeckmannPdf</code>
 					</li>
 
 				</ul>
@@ -208,6 +208,7 @@
 	</p>
 </div>
 
+
 <div>
 <h3> Hacker Points: Hierarchical Sample Warping <em>(XX points)</em></h3>
 
@@ -217,9 +218,40 @@
 	implemented all of the remaining assignment. In addition Hacker Points are either fully awarded or not awarded at all.
 	</div>
 
-	<p> 
-	The goal of this exercise is to implement hierarchical sample warping as explained in the class. Input: image. Use your own tests.
-	</p>
+	<div>
+		<p> 
+			The goal of this exercise is to implement hierarchical sample warping. As input a non-negative greyscale image is given. This image should be used to define the PDF of samples distributed on a 2D rectangular domain. The density should increase linearly with respect to the pixel value of the image.
+		</p>
+	</div>
+
+	<div class="thumbnail col-md-15">
+		<a class="fancybox" href="images/hsw.png"><img src="images/hsw.png"/></a>
+		<div class="caption">
+			Hierarchical Sample Warping example with a 2x2 pixel image.
+		</div>
+	</div>
+
+	<div>
+		<p>
+			Hierarchical Sample Warping works as follows: 
+			<ul>
+				<li> Input: greyscale image (PDF) and N samples uniformly distributed on the rectangular domain.</li>
+				<li> Sub-divide the image in two halfs and sum up the values in each part. </li>
+				<li> Warp the samples given as input such that the number of samples allocated to each part is linearly related to the corresponding sum of that region in the image.</li>
+				<li> Repeat the steps above for the other axis. </li>
+				<li> Finally recursively repeat these two steps for each quadrant until the process cannot sub-divide the image anymore.</li>
+			</ul>
+		</p>
+	</div>
 	
+	<h4> What to submit </h4>
+	<p>
+		<ul>
+			<li> A correct implementation of the HSW algorithm described above. </li> 
+			<li> A modified version of the warptest GUI that visualizes your points and the input PDF. </li> 
+			<li> Two examples in your report and modified GUI. First is with the 4 pixel image shown above and second should be your favorite probe from <a href="http://gl.ict.usc.edu/Data/HighResProbes/"> here</a></li> 
+			<li> A \(\chi^2\) test that verifies that your sample distribution agrees with the input PDF. </li> 
+		</ul>
+	</p>
 
 </div>
