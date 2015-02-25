@@ -7,6 +7,7 @@
 		$("code").addClass("prettyprint");
 		$("code").addClass("lang-cpp");
 		prettyPrint();
+		MathJax.Hub.Rerender();
 	};
 
 	$("#prelim-body").load("prelim.html", prettify);
