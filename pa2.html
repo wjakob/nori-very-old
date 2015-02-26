@@ -256,27 +256,27 @@
 		to circumvent this problem.
 	</p>
 
-
 	<div>
 		<p>
-			Hierarchical Sample Warping works as follows: 
+			Your implementation of Hierarchical Sample Warping with the help of mip mapping should work as follows: 
 			<ul>
-				<li> Input: grayscale image and \(N\) samples uniformly distributed on the unit square.</li>
-				<li> Subdivide the image in two equal-sized parts along the \(x\)-axis and sum up the luminance values in each part. </li>
-				<li> Warp input sample set along the \(x\) axis such that the
-					number of samples allocated to each part matches ratio of
-					the summed luminance computed in the last step.</li>
-				<li> Repeat the steps above for the \(y\)-axis. </li>
-				<li> Recursively repeat these two steps for each quadrant until the process cannot sub-divide the image anymore.</li>
+				<li> <em>Input</em>: an EXR image with \(2^M \times 2^M \) pixels and a 2D sample uniformly distributed on the unit square.</li>
+				<li> Compute the luminance of that image and normalize it. </li>
+				<li> Build and store the Mipmap for that image. </li>
+				<li> Starting at the top level's children (\(2 \times 2\) px) compute the sum of the luminance values for the two top quadrants and the two bottom quadrants \((80\%,20\%\) in the example figure below).</li>
+				<li> Warp the input domain of the sample vertically such that the area of the domains agrees with the ratio of the luminance values. </li>
+				<li> Repeat the above two steps independently for the top and bottom row. </li>
+				<li> Repeat this process for the quadrant where your sample fell in, until the bottom level of your mipmap is reached (full resolution).</li>
+				<li> <em>Output</em>: a sample distributed according to the density function defined by the image (in \(O(M)\)).</li>
 			</ul>
-			You will want to use a data structure such as a quad-tree to accelerate the second step.
+			
 		</p>
 	</div>
 	<div class="row-centered">
 		<div class="thumbnail col-md-5 col-centered">
 			<a class="fancybox" href="images/hsw.png"><img src="images/hsw.png"/></a>
 			<div class="caption">
-				Hierarchical Sample Warping example with a 2x2 pixel image.
+				Left: Uniformly distributed 2D input points. Middle: 2x2 image which defines the sampling density. Right: Hierarchical Sample Warping result applied on the uniformly distributed input points.
 			</div>
 		</div>
 	</div>
@@ -286,11 +286,11 @@
 		<ul>
 			<li> A correct implementation of the hierarchical sample warping algorithm described above. </li> 
 			<li> A modified version of the <tt>warptest</tt> user interface that visualizes your generated points sets.</li> 
-			<li> Two screen shots of the \(\chi^2\)-test, which verifies that your warping function and density function are mutually consistent.
-				The first should be with a simple
-				2x2 pixel image as shown above, and for the second, you can choose any
+			<li> Two screen shots of the \(\chi^2\)-test (with many input points), which verifies that your warping function and density function are mutually consistent.
+				The first should be with a simple \(2 \times 2\) pixel image as shown above, and for the second, you can choose any
 				light probe you like (<a href="http://gl.ict.usc.edu/Data/HighResProbes/">Paul Debevec</a> and
 				<a href="http://dativ.at/lightprobes/">Bernhard Vogl</a> provide many light probes free of charge).
+				Feel free to change the resolution of your input image to a power of 2 (at least \(512 \times 512\)) using a tool of your choice.
 			</li>
 		</ul>
 	</p>
