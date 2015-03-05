@@ -1,0 +1,341 @@
+<div style="margin-top:-20px; text-align:justify">
+
+	\(
+	   \def\bold#1{\boldsymbol{#1}}
+	\)
+
+	<h3>Preliminaries</h3>
+
+
+	<p>
+		Begin by importing the base code updates into your repository by
+		running <tt>git pull</tt>, cmake and recompiling. If there were any concurrent
+		changes to the same file, you may have to perform a <em>merge</em> (see
+		the git tutorials under "Preliminaries" for more information). 
+	</p>
+
+	<p>
+		In this exercise you will use your point sets in the context of rendering. You will
+		be implementing various flavors of direct illumination integrators with different 
+		sampling distributions. You will add new emitters with finite extent and a new microfacet
+		BRDF. The integral you will be numerically computing with your integrators at the first camera
+		intersection is:
+	</p>
+	\[
+		L_o (p,\omega_o) = L_e(p,\omega_o) + \int_{h^2} L_r(p,\omega_o,\omega_i) ~ d \omega_i
+	\]
+	where
+	\[
+		L_r(p,\omega_o,\omega_i) = f_r (p,\omega_o,\omega_i) ~ L_d (p,\omega_i) \left| \cos{\theta_i} \right|
+		  
+	\]
+	<p>
+		Note that this time since we will be having emitters with finite extent which can be directly visible to the camera.
+		In these cases \(L_e\) should be returning emitted radiance towards \(\omega_o\) when a camera ray intersects one.
+	</p>
+
+	<h3>Part 1: Light Sampling <em>(55 points)</em></h3>
+	<ul>
+		<li>
+		<h4>Integrator Implementation <em>(10 Points)</em></h4>
+
+		<p>
+			In this part you will implement a new direct illumination integrator (<tt>direct_ems</tt>) 
+			which can integrate incident radiance by performing emitter sampling. In addition to point lights this integrator will 
+			be able to handle two additional types of emitters: distant disk lights and mesh (area) lights. These new emitters 
+			can be fully, partially or not at all visible from a point in your scene, so you will perform MC integration to compute
+			irradiance (accounting also for visibility) at your first camera intersection.
+			For this part of the assignment you will distribute your samples for the new emitters differently according to an emitter
+			specific density function \(\text{pdf}_\text{em}\):
+			\[
+				L_o (p,\omega_o) \approx \frac{1}{N} \sum^N L_e(p,\omega_o) + \frac{L_r(p,\omega_o,\omega_{i,e})}{\text{pdf}_{\text{em}}(\omega_{i,e})} \\
+			\]
+		</p>
+		</li>
+	
+		<li>
+			<h4>Distant Disk Light <em> (10 Points)</em></h4>
+			<p>
+				This distant disk emitter is unique per scene and is defined by its radiance, a "toWorld" transformation and an angle of acceptance \(\theta_a \in [0^o,180^o]\). For a value of \(\theta_a = 0\) the emitter is basically non existent and for a value of \(\theta_a = 180\) the emitter is a constant
+				spherical environment map. In addition the emitter can be rotated using a "toWorld" transformation. You can safely assume that for this emitter only rotations are allowed as transformations. When no transformation is given (i.e \(\text{toWorld} = \bold{I} \)) then the angle of acceptance measured (in degrees) from the Z-axis \([0,0,1]\). Here is an example of the specification:
+			</p>
+			<pre class="prettyprint linenums lang-xml">
+&lt;scene&gt;
+    &lt;!-- Define a distant disk emitter --&gt;
+    &lt;emitter type="distantdisk"&gt;
+        &lt;!-- Set the radiance to a 60 W/m<sup>2</sup>sr  for all channels --&gt;
+        &lt;color name="radiance" value="60"/&gt;
+
+        &lt;!-- Set the acceptance angle to 5 degrees --&gt;
+        &lt;float name="thetaA" value="5"/&gt;
+
+        &lt;!-- Rotate the disk 30 degrees counter-clockwise around the Y-axis --&gt;
+        &lt;transform name="toWorld"&gt;
+            &lt;rotate axis="0,1,0" value="30"/&gt;
+        &lt;/transform&gt;
+        
+    &lt;/emitter&gt;
+
+    &lt;!-- ..... --&gt;
+&lt;/scene&gt;
+			</pre>
+
+				<ul> 
+					<li> 
+					<h4> Radiance Evaluation Method <em>(5 points)</em> </h4> 
+					In your <tt>DistantDisk</tt> class implement a method which will be called whenever a ray escapes your scene or when doing shadow connections. After transforming \(\bold{\omega_e}\) in the emitters local coordinate system, this method will return the constant radiance value when the angle from Z-axis is less or equal than \(\theta_a\) and zero otherwise. Remember to convert your angles to radians before 
+					using the standard trigonometric functions. Here is a usage example for the world-to-local and local-to-world transformations:
+
+					<div class="row">
+						<div class="col-md-6">
+							<pre class="prettyprint linenums " >
+//Constructor example
+
+/* Read a toWorld transform from the xml.
+ * If not use the identity matrix */
+m_emitterToWorld = propList.getTransform(
+		"toWorld", Transform());
+
+/* Invert the toWorld transformation */
+m_worldToEmitter = m_emitterToWorld.inverse();
+
+//...
+							</pre>
+						</div>
+
+						<div class="col-md-6">
+							<pre class="prettyprint linenums ">
+//Usage Example	
+
+/* Convert a world space direction to 
+ * a local direction and vice versa */
+
+Vector3f d1_local = m_worldToEmitter * d1_world;
+Vector3f d2_world = m_emitterToWorld * d2_local;
+
+//...
+
+
+							</pre>
+						</div>
+					</div>
+					</li>
+
+					<li> 
+						<h4> Sampling and Density Methods <em>(5 points)</em> </h4> 
+						Implement a method for generating a world space direction uniformly over the subtended solid angle of the distant disk light. You might find <code>Warp::squareToUniformSphericalCap</code> and your "toWorld" transformations useful. Implement another method which given a world space direction generated
+						using your sampling method returns the probability density used.
+					</li>
+				</ul>
+		</li>
+
+		<li>
+			<h4>Mesh Area Light<em> (25 Points)</em></h4>
+			<p>
+				The mesh area light source is an area light source that can be attached to meshes. It emits radiance uniformly in all directions from each triangle of the mesh.
+				It is parametrized by radiance. Here is the specification:
+			</p>
+			<pre class="prettyprint linenums lang-xml">
+&lt;scene&gt;
+    &lt;!-- Load a Wavefront OBJ file named "mesh.obj" --&gt;
+    &lt;mesh type="obj"&gt;
+        &lt;string name="filename" value="mesh.obj"/&gt;
+
+        &lt;!-- Turn the mesh into an area light source --&gt;
+        &lt;emitter type="area"&gt;
+            &lt;!-- Assign a uniform radiance of 1 W/m<sup>2</sup>sr --&gt;
+            &lt;color name="radiance" value="1,1,1"/&gt;
+        &lt;/emitter&gt;
+    &lt;/mesh&gt;
+
+    &lt;!-- ..... --&gt;
+&lt;/scene&gt;
+			</pre>
+
+				<ul> 
+					<li> 
+					<h4> Radiance Evaluation Method <em>(5 points)</em> </h4> 
+						In your <tt>AreaEmitter</tt> class implement a method which will be called whenever a camera ray intersects your mesh emitter or when doing shadow connections. 
+						Given a camera intersection point \(p_c\) with an emitter you should return the associated radiance value when the point lies on the front side of an emissive
+						triangle. In addition this method should return the radiance (ignoring occlusion for now) when a direction towards a sampled point on the emitter mesh is hitting from the front side. 
+					</li>
+
+					<li> 
+						<h4> <tt>Mesh</tt> Sampling and Density Methods <em>(15 points)</em> </h4> 
+						Get familiar with the <tt>Mesh</tt> class. Figure out where vertices, faces and normals are stored (when available). In this class implement a method that samples uniformly a position and computes the corresponding normal. Additionally implement a method that returns the density function with respect to area. 
+						<p> You can perform your sampling by first choosing a triangle from the mesh according to its area, and then sampling uniformly within that triangle. Interpolate the vertex normals when they are provided or compute the normal to the plane defined by the corresponding triangle otherwise. Furthen investigate the <tt>DiscretePDF</tt> class which is a member <code>Mesh::m_distr</code>. You can use this class to sample according to a discrete density function. 
+						</p>
+					</li>
+
+					<li>
+						<h4> <tt>AreaEmitter</tt> Sampling and Density Methods <em>(5 points)</em> </h4> 
+						With the help of your sampling and density methods implemented in <tt>Mesh</tt> class, implement the corresponding sampling methods in your area emitter.
+						Your density evaluation method takes as input a world space direction (along with the corresponding sampled position and normal on your emitter) generated using your sampling method returns the probability density used when converted to solid angle measure. Make sure to return zero whenever you have to deal with back facing triangles.
+					</li>
+				</ul>
+		</li>
+
+		<li>
+			<h4>Validation <em> (10 Points)</em></h4>
+			<p>
+				T-test and validation images.
+			</p>
+		</li>
+
+
+	</ul>
+
+
+	<h3>Part 2: BRDF Sampling <em>(40 points)</em></h3>
+	<ul>
+		<li>
+		<h4>Integrator Implementation <em>(10 Points)</em></h4>
+
+		<p>
+			In this part we will implement a new direct illumination integrator (<tt>direct_mats</tt>) 
+			that can integrate incident radiance from mesh lights and distant disk lights. In addition 
+			you will implement a new microfacet BRDF. For this part of the assignment you will distribute 
+			your samples according to a BRDF specific density function :
+			\[
+				L_o (p,\omega_o) = \approx \frac{1}{N} \sum^N L_e(p,\omega_o) + \frac{L_r(p,\omega_o,\omega_{i,m})}{pdf_{\text{mat}}(\omega_{i,m})}
+			\]
+			This integrator should return black for point lights since the probability of intersecting them with this sampling strategy is zero.
+		</p>
+		</li>
+
+		<li>
+			<h4>Microfacet BRDF Evaluation <em> (5 Points)</em></h4>
+			<p>
+				The Microfacet BRDF you will implement for this part is a simple linear blend between a diffuse BRDF and a rough dielectric microfacet BRDF. Implement <code>Microfacet::eval()</code> which evaluates the described microfacet BRDF for a given pair of directions in local frame:
+				\[
+					f_r(\bold{\omega_i},\bold{\omega_o}) = \frac{k_d}{\pi} + (1-k_d) \frac{D(\bold{\omega_{h}})~F(\cos{\theta_i},\eta_{e},\eta_{i})~G(\bold{\omega_i},\bold{\omega_o},\bold{\omega_{h}})}{4 \cos{\theta_i} \cos{\theta_o}}, ~~
+					\bold{\omega_{h}} = \frac{\left(\bold{\omega_i} + \bold{\omega_o}\right)}{\left|\left|\bold{\omega_i} + \bold{\omega_o}\right|\right|_2}
+				\]
+				where \(k_d \in [0,1]\) is the RGB diffuse reflection coefficient, \(F\) is the Fresnel reflection (check <tt>common.cpp</tt>), \(\eta_e\) is the exterior index of refraction and \(\eta_i\) is the interior index of refraction. The distribution function \(D\) is the Beckmann distribution:
+
+				\[
+					D(\bold{\omega_{h}}) = \frac{e^{\frac{-\tan^2{\theta_{h}}}{\alpha^2}}}{\pi\, \alpha^2 \cos^4 \theta_{h} } 
+
+				\]
+
+				with its corresponding shadowing term approximation (Smith):
+
+				\[
+					G(\bold{\omega_i},\bold{\omega_o},\bold{\omega_{h}}) = G_1(\bold{\omega_i},\bold{\omega_{h}})~G_1(\bold{\omega_o},\bold{\omega_{h}}) 
+				\]
+
+				\[
+					G_1(\bold{\omega_x},\bold{\omega_h}) = \chi^+\left(\frac{\bold{\omega_x}\cdot\bold{\omega_h}}{\bold{\omega_x}\cdot\bold{n}}\right) 
+					\begin{cases}
+						\frac{3.535b+2.181b^2}{1+2.276b+2.577b^2} & b \lt 1.6 \\
+						1 										  & \text{otherwise} 
+					\end{cases} \\
+
+					b = (a \tan{\theta_x})^{-1}, ~~
+
+					\chi^+(c) = 
+					\begin{cases}
+						1 & c > 0 \\
+						0 & c \le 0
+					\end{cases} \\
+
+				\]
+
+				</p>
+		</li>
+		<li>
+			<h4>Microfacet BRDF Sampling <em> (15 Points)</em></h4>
+			<p>
+				In this part you will generate samples according to the following density function:
+				\[
+					k_s ~ D(\omega_h) \cos{\theta_h} ~ J_h + (1-k_s) \frac{\cos{\theta_o}}{\pi}
+				\]
+				where \(k_s = 1 - \max(k_d)\) and \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\) is the jacobian of the half direction mapping.
+
+			</p>
+		</li>
+		<li>
+			<h4>Validation <em> (10 Points)</em></h4>
+			<p>
+				Pass the \(\chi^2\) test for the Microfacet BRDF for two different angles and the default roughness parameter \(0.2\). Show your screenshots in your report.
+				In addition show a 3-way comparison of the glossy Cornell box scene rendered using <tt>direct_ems</tt>, <tt>direct_mats</tt>,  and the reference.
+			</p>
+		</li>
+
+
+	</ul>
+
+
+	<h3>Part 3: Multiple Importance Sampling <em>(20 Points)</em></h3>
+	<ul>
+		<li>
+			<h4>Integrator Implementation <em>(10 Points)</em></h4>
+			<p>
+				In this part we will implement another direct illumination integrator (<tt>direct_mis</tt>) 
+				This integrator will combine both sampling strategies for computing direct illumination by using multiple importance sampling with the balance heuristic.
+				At your first camera intersection you will sample using both strategies: sampling the emitters and sampling the corresponding BSDF. You will then combine the
+				two estimates using the following:
+			</p>
+
+			\[
+				  L_o (p,\omega_o) \approx \frac{1}{N} \sum^N L_e(p,\omega_o) + \frac{L_r(p,\omega_o,\omega_{i,e}) ~ pdf_\text{em}(\omega_{i,e}) }{pdf_{\text{em}}(\omega_{i,e})+pdf_{\text{mat}}(\omega_{i,e})} 
+				  + \frac{L_r(p,\omega_o,\omega_{i,m}) ~ pdf_\text{mat}(\omega_{i,m}) }{pdf_{\text{em}}(\omega_{i,m})+pdf_{\text{mat}}(\omega_{i,m})} 
+				  \\
+
+			\]
+
+		<li>
+			<h4>Validation <em> (10 Points)</em></h4>
+			<p>
+				Pass the \(\chi^2\) test for the Microfacet BRDF for two different angles and the default roughness parameter \(0.2\). Show your screenshots in your report.
+				In addition show a 3-way comparison of the glossy Cornell box scene rendered using <tt>direct_ems</tt>, <tt>direct_mats</tt>,  and the reference.
+			</p>
+		</li>
+
+
+	</ul>
+
+
+	<h3>Part 4: Interesting Scene <em>(10 Points)</em></h3>
+
+	Make your own interesting scene and submit a rendering (or several) using any combination of the implemented techniques. The filename format for this scene should be <tt>interesting-pa3-firstname-familyname-N}</tt>, where N depends on how many interesting images you are submitting. Be creative, your renderings will be posted on the Course Gallery. 
+
+	<h3> Hacker Points: Specialized Light Source Sampling <em>(20 points)</em></h3>
+
+	<div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points 
+	for the daring few. Sometimes you might be required to implement something that was not taught in class and 
+	you might have to do some research and creative thinking. Hacker Points are awarded only to students who 
+	implemented all of the remaining assignment. In addition Hacker Points are either fully awarded or not awarded at all.
+	</div>
+
+	<p> 
+		For this part your task to create efficient specialized emitters (rectangle, 
+		sphere and disk lights) that can provably improve the sample variance of your
+		integrators with respect to your current generic mesh emitter implementation. 
+		Your main goals are to identify sources of variance in the existing 
+		implementation, address them and validate your results. Possible sources of variance are:
+		<ul>
+			<li> Zero contribution (wasted) samples (e.g. not visible samples on a sphere light). </li>
+			<li> High variance samples (e.g. distance squared in density function). </li>
+			<li> Bad distribution of samples (e.g. clumping of samples because of independent sampling). </li>
+		</ul>
+	</p>
+
+	<p>
+		
+	</p>
+
+	
+	<h4> What to submit </h4>
+	<p>
+		<ul>
+			<li> Implementation of your specialized classes for each emitter which passes your t-tests.</li> 
+			<li> A paragraph in your report (per emitter) explaining the optimizations you implemented and how they relate to the aforementioned sources of variance.</li>
+			<li> Your t-test xml files (one file with 3+ tests for each emitter).</li>
+			<li> A table and a paragraph in your report summarizing the variance improvement for your test cases.</li>
+			<li> An equal sample count comparison with your previous generalized implementation of a scene featuring all emitters.</li>
+			<li> Citations for any papers/ideas that are not yours.</li> 
+		</ul>
+	</p>
+
+</div>
