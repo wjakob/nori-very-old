@@ -34,6 +34,34 @@
 		In these cases \(L_e\) should be returning emitted radiance towards \(\omega_o\) when a camera ray intersects one.
 	</p>
 
+
+	<div class="row" style="margin: 30px">
+		<div class="col-md-4">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/sphere_ao.png"><img src="images/sphere_ao.png"/></a>
+				<div class="caption">
+					A diffuse sphere illuminated by a distant disk light with acceptance angle of 180 degrees.
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/sphere_side.png"><img src="images/sphere_side.png"/></a>
+				<div class="caption">
+					A diffuse sphere illuminated by a distant disk light with acceptance angle of 10 degrees.
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/veach_mis_128spp.png"><img src="images/veach_mis_128spp.png"/></a>
+				<div class="caption">
+					A rendering of the <tt>veach_mi</tt> scene using multiple importance sampling and 128 samples per pixel.
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<h3>Part 1: Light Sampling <em>(55 points)</em></h3>
 	<ul>
 		<li>
@@ -187,7 +215,7 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 		<li>
 			<h4>Validation <em> (10 Points)</em></h4>
 			<p>
-				T-test and validation images.
+				Pass the first 4 t-tests in <tt>test-distant.xml</tt>, first 5 tests in <tt>test-mesh.xml</tt> and first 2 tests in <tt>test-mesh-furnace.xml</tt> found in <tt>./scenes/pa3/tests</tt> (only the <tt>direct_ems</tt> part). Render <tt>odyssey/odyssey_ems.xml</tt>, <tt>sphere/sphere_ao.xml</tt> and <tt>sphere/sphere_side.xml</tt>. Mention in your report if there were any errors found.
 			</p>
 		</li>
 
@@ -266,8 +294,7 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 		<li>
 			<h4>Validation <em> (10 Points)</em></h4>
 			<p>
-				Pass the \(\chi^2\) test for the Microfacet BRDF for two different angles and the default roughness parameter \(0.2\). Show your screenshots in your report.
-				In addition show a 3-way comparison of the glossy Cornell box scene rendered using <tt>direct_ems</tt>, <tt>direct_mats</tt>,  and the reference.
+				You can experiment with the warptest GUI and visualize your implemented BRDF. Pass the \(\chi^2\) and t-tests for the Microfacet BRDF <tt>chi2test-microfacet.xml</tt> and <tt>ttest-microfacet.xml</tt> found in <tt>./scenes/pa3/tests/</tt>. Pass the middle 4 t-tests in <tt>test-distant.xml</tt>, middle 5 tests in <tt>test-mesh.xml</tt> and middle 2 tests in <tt>test-mesh-furnace.xml</tt>. Mention in your report if there were any errors found.
 			</p>
 		</li>
 
@@ -299,8 +326,7 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 		<li>
 			<h4>Validation <em> (10 Points)</em></h4>
 			<p>
-				Pass the \(\chi^2\) test for the Microfacet BRDF for two different angles and the default roughness parameter \(0.2\). Show your screenshots in your report.
-				In addition show a 3-way comparison of the glossy Cornell box scene rendered using <tt>direct_ems</tt>, <tt>direct_mats</tt>,  and the reference.
+				Pass the last 4 t-tests in <tt>test-distant.xml</tt>, last 5 tests in <tt>test-mesh.xml</tt> and last 2 tests in <tt>test-mesh-furnace.xml</tt>. Mention in your report if there were any errors found. Show a 4-way comparison of the veach scene <tt>veach_mi/veach_mi.xml</tt> rendered with 128 samples using <tt>direct_ems</tt>, <tt>direct_mats</tt>, <tt>direct_mis</tt>, and the reference <tt>veach_mis_128spp.exr</tt> rendering.
 			</p>
 		</li>
 
@@ -312,13 +338,7 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 
 	Make your own interesting scene and submit a rendering (or several) using any combination of the implemented techniques. The filename format for this scene should be <tt>interesting-pa3-firstname-familyname-N}</tt>, where N depends on how many interesting images you are submitting. Be creative, your renderings will be posted on the Course Gallery.
 
-	<h3> Hacker Points: Specialized Light Source Sampling <em>(20 points)</em></h3>
-
-	<div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
-	for the daring few. Sometimes you might be required to implement something that was not taught in class and
-	you might have to do some research and creative thinking. Hacker Points are awarded only to students who
-	implemented all of the remaining assignment. In addition Hacker Points are either fully awarded or not awarded at all.
-	</div>
+	<h3> Hacker Points: Specialized Light Source Sampling <em>(15 points)</em></h3>
 
 	<p>
 		For this part your task is to create efficient specialized emitters (rectangle,
