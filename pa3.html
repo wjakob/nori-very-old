@@ -60,27 +60,36 @@
 	</p>
 
 	<div class="row" style="margin: 30px">
-		<div class="col-md-4">
+		<div class="col-md-3">
 			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/sphere_ao.png"><img src="images/sphere_ao.png"/></a>
+				<a class="fancybox" href="images/sphere_ao_ems_256spp.png"><img src="images/sphere_ao_ems_256spp.png"/></a>
 				<div class="caption">
 					A diffuse sphere illuminated by a distant disk light that subtends an angle of 180 degrees.
 				</div>
 			</div>
 		</div>
-		<div class="col-md-4">
+		<div class="col-md-3">
 			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/sphere_side.png"><img src="images/sphere_side.png"/></a>
+				<a class="fancybox" href="images/sphere_side_mis_128spp.png"><img src="images/sphere_side_mis_128spp.png"/></a>
 				<div class="caption">
 					A diffuse sphere illuminated by a distant disk light that subtends an angle of 10 degrees.
 				</div>
 			</div>
 		</div>
-		<div class="col-md-4">
+		<div class="col-md-3">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/odyssey_mis_64spp.png"><img src="images/odyssey_mis_64spp.png"/></a>
+				<div class="caption">
+					A rendering of the <tt>odyssey</tt> scene using multiple importance sampling and 64 samples per pixel.
+				</div>
+			</div>
+		</div>
+
+		<div class="col-md-3">
 			<div class="thumbnail" style="margin: 10px">
 				<a class="fancybox" href="images/veach_mis_128spp.png"><img src="images/veach_mis_128spp.png"/></a>
 				<div class="caption">
-					A rendering of the <tt>veach_mi</tt> scene using multiple importance sampling and 128 samples per pixel.
+					A rendering of the <tt>veach</tt> scene using multiple importance sampling and 128 samples per pixel.
 				</div>
 			</div>
 		</div>
@@ -132,7 +141,7 @@
         &lt;float name="thetaA" value="5"/&gt;
 
         &lt;!-- Rotate the disk 30 degrees counter-clockwise around the Y-axis --&gt;
-        &lt;transform name=<tt>toWorld</tt>&gt;
+        &lt;transform name="toWorld"/&gt;
             &lt;rotate axis="0,1,0" value="30"/&gt;
         &lt;/transform&gt;
 
@@ -158,7 +167,7 @@
 /* Read a toWorld transform from the XML scene
    specification. If not present, use the identity */
 m_emitterToWorld = propList.getTransform(
-		<tt>toWorld</tt>, Transform());
+		"toWorld", Transform());
 
 /* Invert the toWorld transformation */
 m_worldToEmitter = m_emitterToWorld.inverse();
@@ -251,7 +260,19 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 		<li>
 			<h4>Validation <em> (10 Points)</em></h4>
 			<p>
-				Pass the first 4 t-tests in <tt>test-distant.xml</tt>, first 5 tests in <tt>test-mesh.xml</tt> and first 2 tests in <tt>test-mesh-furnace.xml</tt> found in <tt>./scenes/pa3/tests</tt> (only the <tt>direct_ems</tt> part). Render <tt>odyssey/odyssey_ems.xml</tt>, <tt>sphere/sphere_ao.xml</tt> and <tt>sphere/sphere_side.xml</tt>. Mention in your report if there were any errors found.
+				Pass the the <tt>direct_ems</tt> related tests found in <tt>./scenes/pa3/tests</tt>: 
+				<ul> 
+					<li> first 4 t-tests in <tt>test-distant.xml</tt>, </li>
+					<li> first 5 tests in <tt>test-mesh.xml</tt>, </li>
+					<li> first 2 tests in <tt>test-mesh-furnace.xml</tt> </li>
+				</ul>
+			</p>
+			<p>
+				Using <tt>direct_ems</tt> render the following scenes found in <tt>./scenes/pa3</tt> : 
+				<ul>
+					<li><tt>sphere/sphere_ao_ems.xml</tt>, </li>
+					<li><tt>sphere/sphere_side_ems.xml</tt>, </li>
+				</ul>
 			</p>
 		</li>
 
@@ -270,7 +291,7 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 			you will implement a new microfacet BRDF. For this part of the assignment you will distribute
 			your samples according to a BRDF specific density function :
 			\[
-			L_o (p,\omega_o) \approx \frac{k=1}{N} \sum^N \left( L_e(p,\omega_o) + \frac{\integrand(p,\omega_o,\omega_i^{(k)})}{\text{pdf}_{\text{mat}}\big(\omega_i^{(k)}\big)} \right)
+			L_o (p,\omega_o) \approx \frac{1}{N} \sum_{k=1}^N \left( L_e(p,\omega_o) + \frac{\integrand(p,\omega_o,\omega_i^{(k)})}{\text{pdf}_{\text{mat}}\big(\omega_i^{(k)}\big)} \right)
 			\]
 			This integrator should produce black images with zero-valued pixels
 			when given a scene containing only point lights, since the probability
@@ -327,7 +348,8 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 				\[
 					k_s ~ D(\omega_h) \cos{\theta_h} ~ J_h + (1-k_s) \frac{\cos{\theta_o}}{\pi}
 				\]
-				where \(k_s = 1 - \max(k_d)\) and \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\) is the Jacobian of the half direction mapping discussed in class.
+				where \(k_s = 1 - \max(k_d)\) and \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\) 
+				is the Jacobian of the half direction mapping discussed in class.
 				Choose whether to sample the diffuse or the specular component
 				based on the value of \(k_s\). In the first case, follow the
 				recipe from the slides, by sampling a normal from the microfacet
@@ -340,17 +362,36 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 			<h4>Validation <em> (10 Points)</em></h4>
 			<p>
 				You can experiment with the warptest GUI and visualize your
-				implemented BRDF. Pass the \(\chi^2\) and t-tests for the
-				Microfacet BRDF <tt>chi2test-microfacet.xml</tt> and
-				<tt>ttest-microfacet.xml</tt> found in
-				<tt>./scenes/pa3/tests/</tt>. Pass the middle 4 t-tests in
-				<tt>test-distant.xml</tt>, middle 5 tests in
-				<tt>test-mesh.xml</tt> and middle 2 tests in
-				<tt>test-mesh-furnace.xml</tt>. Mention in your report if there
-				were any errors found. Note that the visual GUI also contains
+				implemented BRDF. Pass all the \(\chi^2\) and t-tests for the
+				Microfacet BRDF found in <tt>./scenes/pa3/tests</tt>: 
+				<ul> 
+					<li><tt>chi2test-microfacet.xml</tt>, </li>
+					<li><tt>ttest-microfacet.xml</tt></li>
+				</ul>
+				Note that the visual GUI also contains
 				a \(\chi^2\) test, but this is just to facilitate debugging and
 				visualization; the XML files are the real validation benchmark.
 			</p>
+			<p>
+				Pass the <tt>direct_mats</tt> related t-tests found in <tt>./scenes/pa3/tests</tt>: 
+				<ul>
+					<li><tt>test-distant.xml</tt> (second set of 4 tests), </li>
+					<li><tt>test-mesh.xml</tt> (second set of 5 tests), </li>
+					<li><tt>test-mesh-furnace.xml</tt> (second set of 2 tests) </li>
+				</ul>
+				Mention in your report if there any errors reported.
+			</p>
+
+			<p>
+				Using <tt>direct_mats</tt> render the following scenes found in <tt>./scenes/pa3</tt> : 
+				<ul>
+					<li><tt>sphere/sphere_ao_mats.xml</tt>, </li>
+					<li><tt>sphere/sphere_side_mats.xml</tt>, </li>
+					<li><tt>odyssey/odyssey_mats.xml</tt>, </li>
+					<li><tt>veach_mi/veach_mats.xml</tt></li>
+				</ul>
+			</p>
+
 		</li>
 
 
@@ -387,7 +428,27 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 		<li>
 			<h4>Validation <em> (10 Points)</em></h4>
 			<p>
-				Pass the last 4 t-tests in <tt>test-distant.xml</tt>, last 5 tests in <tt>test-mesh.xml</tt> and last 2 tests in <tt>test-mesh-furnace.xml</tt>. Mention in your report if there were any errors found. Show a 4-way comparison of the veach scene <tt>veach_mi/veach_mi.xml</tt> rendered with 128 samples using <tt>direct_ems</tt>, <tt>direct_mats</tt>, <tt>direct_mis</tt>, and the reference <tt>veach_mis_128spp.exr</tt> rendering.
+				Pass the <tt>direct_mis</tt> related t-tests found in <tt>./scenes/pa3/tests</tt>: 
+				<ul>
+					<li>last 4 tests in <tt>test-distant.xml</tt>,</li>
+					<li>last 5 tests in <tt>test-mesh.xml</tt>,</li>
+					<li>last 2 tests in <tt>test-mesh-furnace.xml</tt> </li>
+				</ul>
+				Mention in your report if there any errors reported.
+			</p>
+			<p>
+				Using <tt>direct_mis</tt> render the following scenes found in <tt>./scenes/pa3</tt> : 
+				<ul>
+					<li><tt>sphere/sphere_ao_mis.xml</tt>, </li>
+					<li><tt>sphere/sphere_side_mis.xml</tt>, </li>
+					<li><tt>odyssey/odyssey_mis.xml</tt>, </li>
+					<li><tt>veach_mi/veach_mis.xml</tt> </li>
+				</ul>
+			</p>			
+			<p>
+				Show a 4-way comparison for each of the 4 scenes in your report. For each scene compare
+				your 3 integrators (<tt>direct_ems</tt>, <tt>direct_mats</tt>, <tt>direct_mis</tt>) with the 
+				reference MIS rendering.
 			</p>
 		</li>
 
@@ -402,11 +463,11 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 	<h3> Hacker Points: Specialized Light Source Sampling <em>(15 points)</em></h3>
 
 	<p>
-		For this part your task is to create efficient specialized emitters (rectangle,
+		For this part your task is to create three efficient specialized emitters (rectangle,
 		sphere and disk lights) that can improve the sample variance of your
 		integrators with respect to your current generalized mesh emitter implementation.
-		Your main goals are to identify sources of variance in the existing
-		implementation, address them and validate your results. Possible sources of variance are:
+		Identify the sources of variance in your existing implementation, address them 
+		and validate your results. Possible sources of variance are:
 		<ul>
 			<li> Zero contribution (wasted) samples (e.g. not visible samples on a sphere light). </li>
 			<li> High variance samples (e.g. distance squared in density function). </li>
@@ -415,16 +476,17 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 	</p>
 
 	<p>
-
+		Your goal is to optimize sampling for these specialized light sources by improving all three sources of variance
+		mentioned above.
 	</p>
 
 
 	<h4> What to submit </h4>
 	<p>
 		<ul>
-			<li> Implementation of your specialized classes for each emitter which passes your t-tests.</li>
+			<li> Implementation of your specialized classes for each if the three emitters which passes your t-tests.</li>
 			<li> A paragraph in your report (per emitter) explaining the optimizations you implemented and how they relate to the aforementioned sources of variance.</li>
-			<li> Your t-test xml files (for each emitter: a file with 3+ tests each).</li>
+			<li> Your t-test xml files (for each emitter: a file with 3 or more tests each).</li>
 			<li> A table and a paragraph in your report summarizing the variance improvement for your test cases.</li>
 			<li> An equal sample count comparison with your previous generalized implementation of a scene featuring all emitters.</li>
 			<li> Citations for any papers/ideas that you relied on.</li>
