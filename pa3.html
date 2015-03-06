@@ -2,6 +2,9 @@
 
 	\(
 	   \def\bold#1{\boldsymbol{#1}}
+	   \def\vp{p}
+	   \def\vr{r}
+	   \def\integrand{\mathcal{F}}
 	\)
 
 	<h3>Preliminaries</h3>
@@ -15,32 +18,53 @@
 	</p>
 
 	<p>
-		In this exercise you will use your point sets in the context of rendering. You will
-		be implementing various flavors of direct illumination integrators with different
-		sampling distributions. You will add new emitters with finite extent and a new microfacet
-		BRDF. The integral you will be numerically computing with your integrators at the first camera
-		intersection is:
+		In this exercise you will use your point sets in the context of
+		rendering. You will be implementing various flavors of direct
+		illumination integrators with different sampling distributions. You
+		also will add new kinds of emitters with finite extent and a new
+		microfacet BRDF. Your new integrators will compute the <em>local
+		illumination integral</em> discussed in class:
 	</p>
 	\[
-		L_o (p,\omega_o) = L_e(p,\omega_o) + \int_{H^2} L_r(p,\omega_o,\omega_i) ~ d \omega_i
+		L_o (\vp,\omega_o) = L_e(\vp,\omega_o) + \int_{H^2} f_r (\vp,\omega_o,\omega_i)\,L_i (\vp,\omega_i) \, \mathrm{d} \omega_i.
 	\]
-	where
+	where \(f_r\) is the BRDF, \(p\) is a surface position and \(L_i\) and \(L_o\) denote the incident and outgoing radiance functions.
+	Generally, \(L_i\) and \(L_o\) are related to each other using the ray tracing operator
+	\(\vr(p, \omega)\), which returns the nearest surface position visible along the ray \(\vp, \omega\), i.e.
 	\[
-		L_r(p,\omega_o,\omega_i) = f_r (p,\omega_o,\omega_i) ~ L_d (p,\omega_i) \left| \cos{\theta_i} \right|
-
+		L_i(\vp,\omega)=L_o(\vr(\vp, \omega), -\omega)
+	\]
+	and the above integral is thus defined recursively. In this assignment, we focus on <em>direct illumination</em>
+	only and therefore truncate the recursion after the first light bounce. This means that the integral is now given by
+	\[
+	L_o (\vp,\omega_o) = L_e(\vp,\omega_o) + \int_{H^2} \underbrace{f_r (\vp,\omega_o,\omega_i)\,L_e (\vr(\vp,\omega_i), -\omega_i)}_{=: \integrand(\vp, \omega_o, \omega_i)} \, \mathrm{d} \omega_i.
 	\]
 	<p>
-		Note that this time we will be having emitters with finite extent, which can be directly visible to the camera.
-		In these cases \(L_e\) should be returning emitted radiance towards \(\omega_o\) when a camera ray intersects one.
+		We set \(\integrand(\vp, \omega_o, \omega_i)\) as the integrand in the above expression to simplify the notation below.
 	</p>
 
+	<p>
+		In comparison to the last assignment, we will be be working with emitters that have a finite extent, which means that
+		they can be directly observed by the camera. This is why the first summand in the above equation is needed: it
+		returns emitted radiance towards the camera when light sources are visible on screen.
+		Also note that the above equation defines outgoing radiance at surface points. To visualize incident
+		radiance at the camera, you will need one more invocation of the ray tracing operator.
+	</p>
+	<p>
+		Like in the first assignment, we don't explicitly specify an API that
+		you should use to implement the sampling and evaluation operations for
+		emitters—finding suitable abstractions is part of the exercise.
+		That said, you can look at the <code>BSDF</code> definitions in
+		<tt>include/nori/bsdf.h</tt> to get a rough idea as to
+		how one might get started with such an interface.
+	</p>
 
 	<div class="row" style="margin: 30px">
 		<div class="col-md-4">
 			<div class="thumbnail" style="margin: 10px">
 				<a class="fancybox" href="images/sphere_ao.png"><img src="images/sphere_ao.png"/></a>
 				<div class="caption">
-					A diffuse sphere illuminated by a distant disk light with acceptance angle of 180 degrees.
+					A diffuse sphere illuminated by a distant disk light that subtends an angle of 180 degrees.
 				</div>
 			</div>
 		</div>
@@ -48,7 +72,7 @@
 			<div class="thumbnail" style="margin: 10px">
 				<a class="fancybox" href="images/sphere_side.png"><img src="images/sphere_side.png"/></a>
 				<div class="caption">
-					A diffuse sphere illuminated by a distant disk light with acceptance angle of 10 degrees.
+					A diffuse sphere illuminated by a distant disk light that subtends an angle of 10 degrees.
 				</div>
 			</div>
 		</div>
@@ -76,7 +100,7 @@
 			For this part of the assignment you will distribute your samples for the new emitters according to an emitter
 			specific density function \(\text{pdf}_\text{em}\):
 			\[
-				L_o (p,\omega_o) \approx \frac{1}{N} \sum^N \left( L_e(p,\omega_o) + \frac{L_r(p,\omega_o,\omega_{i,e})}{\text{pdf}_{\text{em}}(\omega_{i,e})} \right)\\
+			L_o (p,\omega_o) \approx \frac{1}{N} \sum_{k=1}^N \left( L_e(p,\omega_o) + \frac{\integrand\left(p,\omega_o,\omega_i^{(k)}\right)}{\text{pdf}_{\text{em}}\left(\omega_i^{(k)}\right)} \right)\\
 			\]
 		</p>
 		</li>
@@ -84,15 +108,16 @@
 		<li>
 			<h4>Distant Disk Light <em> (10 Points)</em></h4>
 			<p>
-				There can be at most one distant disk emitter per scene and is defined
+				There can be at most one distant disk emitter per scene; when present, it is fully specified
 				by its radiance, a <tt>toWorld</tt> transformation and the angle subtended
 				by the light source as seen by object in the scene when there is no occlusion
-				\(\theta_a \in [0^o,180^o]\). For a value of \(\theta_a = 0\) the emitter is
-				basically non existent and for a value of \(\theta_a = 180\) the emitter is a constant
+				\(\theta_a \in [0^\circ,180^\circ]\). For a values of \(\theta_a \to 0\) the emitter tends
+				to a directional light source and for a value of \(\theta_a = 180\) the emitter is a constant
 				spherical environment map. In addition the emitter can be rotated using a
-				<tt>toWorld</tt> transformation. You can safely assume that for this
-				emitter, only rotations are allowed as transformations. When no transformation
-				is given (i.e \(\text{toWorld} = \bold{I} \)) then the subtended angle
+				<tt>toWorld</tt> transformation. You can safely assume 
+				that only rotations are allowed as transformations for this emitter.
+				When no transformation
+				is given (i.e <tt>toWorld</tt> \(= \bold{I} \)) then the subtended angle
 				is measured (in degrees) from the Z-axis \([0,0,1]\). Here is how instances
 				of <tt>distantdisk</tt> will be specified in Nori's scene description language:
 			</p>
@@ -120,16 +145,18 @@
 				<ul>
 					<li>
 					<h4> Radiance Evaluation Method <em>(5 points)</em> </h4>
-					In your <tt>DistantDisk</tt> class implement a method which will be called whenever a ray escapes your scene or when doing shadow connections. After transforming \(\bold{\omega_e}\) in the emitters local coordinate system, this method will return the constant radiance value when the angle from Z-axis is less or equal than \(\theta_a\) and zero otherwise. Remember to convert your angles to radians before
+					<p>
+					In your <tt>DistantDisk</tt> class, implement a method which will be called whenever a ray escapes your scene or when doing shadow connections. After transforming \(\bold{\omega_e}\) in the emitters local coordinate system, this method will return the constant radiance value when the angle from Z-axis is less or equal than \(\theta_a\) and zero otherwise. Remember to convert your angles to radians before
 					using the standard trigonometric functions. Here is a usage example for the world-to-local and local-to-world transformations:
+					</p>
 
 					<div class="row">
 						<div class="col-md-6">
 							<pre class="prettyprint linenums " >
-//Constructor example
+// Constructor example
 
-/* Read a toWorld transform from the xml.
- * If not use the identity matrix */
+/* Read a toWorld transform from the XML scene
+   specification. If not present, use the identity */
 m_emitterToWorld = propList.getTransform(
 		<tt>toWorld</tt>, Transform());
 
@@ -142,10 +169,10 @@ m_worldToEmitter = m_emitterToWorld.inverse();
 
 						<div class="col-md-6">
 							<pre class="prettyprint linenums ">
-//Usage Example
+// Usage Example
 
 /* Convert a world space direction to
- * a local direction and vice versa */
+   a local direction and vice versa    */
 
 Vector3f d1_local = m_worldToEmitter * d1_world;
 Vector3f d2_world = m_emitterToWorld * d2_local;
@@ -160,8 +187,9 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 
 					<li>
 						<h4> Sampling and Density Methods <em>(5 points)</em> </h4>
-						Implement a method for generating a world space direction uniformly over the subtended solid angle of the distant disk light. You might find <code>Warp::squareToUniformSphericalCap</code> and your <tt>toWorld</tt> transformations useful. Implement another method which given a world space direction generated
-						using your sampling method returns the probability density used.
+						<p>
+						Implement a method for generating a world space direction uniformly over the subtended solid angle of the distant disk light. You might find <code>Warp::squareToUniformSphericalCap</code> and your <tt>toWorld</tt> transformations useful. Implement another method which returns the probability density of the sampling method for a given a world space direction.
+						</p>
 					</li>
 				</ul>
 		</li>
@@ -192,15 +220,23 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 				<ul>
 					<li>
 					<h4> Radiance Evaluation Method <em>(5 points)</em> </h4>
-						In your <tt>AreaEmitter</tt> class implement a method which can be called by the integrators whenever a ray intersects your mesh emitter.
-						Given a camera intersection point \(p_c\) with an emitter you should return the associated radiance value when the point lies on the front side of an emissive
-						triangle. In addition this method should return the radiance (ignoring occlusion for now) when a direction towards a sampled point on the emitter mesh is hitting from the front side.
+						In your <code>AreaEmitter</code> class implement a method
+						which can be called by the integrators whenever a ray
+						intersects your mesh emitter. Given a camera
+						ray intersection point \(p_c\) with an emitter this function should
+						return the associated radiance value when the front
+						side of an emissive triangle was intersected and zero otherwise.
+						This method (or a separate one) should also be able to return the radiance of points on the
+						emitter that are not directly seen by the camera (ignoring occlusion for now),
+						which will be needed for direct illumination sampling.
 					</li>
 
 					<li>
 						<h4> <tt>Mesh</tt> Sampling and Density Methods <em>(15 points)</em> </h4>
-						Get familiar with the <tt>Mesh</tt> class. Figure out where vertices, faces and normals are stored (when available). In this class implement a method that uniformly samples positions and computes the corresponding normal. Additionally implement a method that returns the density function of your importance sampling technique.
-						<p> You can perform your sampling by first choosing a triangle from the mesh according to its area, and then sampling uniformly within that triangle. Interpolate the vertex normals when they are provided or compute the normal to the plane defined by the corresponding triangle otherwise. You may find the <tt>DiscretePDF</tt> class useful. For efficiency, build a discrete PDF over triangles once when the activate() method of the <tt>Mesh</tt> is called, and use this precomputed data in your sampling code.
+						<p>
+						Familiarize yourself with the <code>Mesh</code> class to see how vertices, faces and normals are stored. In this class, implement a method that uniformly samples positions on the surface and also computes the corresponding normal. Additionally implement a method that returns the density function of your importance sampling technique.
+						</p>
+						<p> You can perform your sampling by first choosing a triangle from the mesh according to its area, and then sampling uniformly within that triangle. Interpolate the vertex normals when they are provided or compute the normal to the plane defined by the corresponding triangle otherwise. You may find the <code>DiscretePDF</code> class useful. For efficiency, build a discrete PDF over triangles once when the <code>activate()</code> method of the <code>Mesh</code> is called, and use this precomputed data in your sampling code.
 						</p>
 					</li>
 
@@ -234,9 +270,11 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 			you will implement a new microfacet BRDF. For this part of the assignment you will distribute
 			your samples according to a BRDF specific density function :
 			\[
-				L_o (p,\omega_o) = \approx \frac{1}{N} \sum^N \left( L_e(p,\omega_o) + \frac{L_r(p,\omega_o,\omega_{i,m})}{\text{pdf}_{\text{mat}}(\omega_{i,m})} \right)
+			L_o (p,\omega_o) \approx \frac{k=1}{N} \sum^N \left( L_e(p,\omega_o) + \frac{\integrand(p,\omega_o,\omega_i^{(k)})}{\text{pdf}_{\text{mat}}\big(\omega_i^{(k)}\big)} \right)
 			\]
-			This integrator should return black for point lights since the probability of intersecting them with this sampling strategy is zero.
+			This integrator should produce black images with zero-valued pixels
+			when given a scene containing only point lights, since the probability
+			of intersecting them with this sampling strategy is zero.
 		</p>
 		</li>
 
@@ -248,7 +286,7 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 					f_r(\bold{\omega_i},\bold{\omega_o}) = \frac{k_d}{\pi} + (1-k_d) \frac{D(\bold{\omega_{h}})~F(\cos{\theta_i},\eta_{e},\eta_{i})~G(\bold{\omega_i},\bold{\omega_o},\bold{\omega_{h}})}{4 \cos{\theta_i} \cos{\theta_o}}, ~~
 					\bold{\omega_{h}} = \frac{\left(\bold{\omega_i} + \bold{\omega_o}\right)}{\left|\left|\bold{\omega_i} + \bold{\omega_o}\right|\right|_2}
 				\]
-				where \(k_d \in [0,1]\) is the RGB diffuse reflection coefficient, \(F\) is the fresnel reflection coefficient (check <tt>common.cpp</tt>), \(\eta_e\) is the exterior index of refraction and \(\eta_i\) is the interior index of refraction. The distribution function \(D\) is the Beckmann distribution:
+				where \(k_d \in [0,1]^3\) is the RGB diffuse reflection coefficient, \(F\) is the fresnel reflection coefficient (check <tt>common.cpp</tt>), \(\eta_e\) is the exterior index of refraction and \(\eta_i\) is the interior index of refraction. The distribution function \(D\) is the Beckmann distribution:
 
 				\[
 					D(\bold{\omega_{h}}) = \frac{e^{\frac{-\tan^2{\theta_{h}}}{\alpha^2}}}{\pi\, \alpha^2 \cos^4 \theta_{h} }
@@ -262,13 +300,13 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 				\]
 
 				\[
-					G_1(\bold{\omega_x},\bold{\omega_h}) = \chi^+\left(\frac{\bold{\omega_x}\cdot\bold{\omega_h}}{\bold{\omega_x}\cdot\bold{n}}\right)
+					G_1(\bold{\omega},\bold{\omega_h}) = \chi^+\left(\frac{\bold{\omega}\cdot\bold{\omega_h}}{\bold{\omega}\cdot\bold{n}}\right)
 					\begin{cases}
 						\frac{3.535b+2.181b^2}{1+2.276b+2.577b^2} & b \lt 1.6 \\
 						1 										  & \text{otherwise}
 					\end{cases} \\
 
-					b = (a \tan{\theta_x})^{-1}, ~~
+					b = (a \tan{\theta_h})^{-1}, ~~
 
 					\chi^+(c) =
 					\begin{cases}
@@ -277,6 +315,8 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 					\end{cases} \\
 
 				\]
+				where \(\theta_h\) is the angle between the surface normal \(\bold{n}\)
+				and the \(\omega_h\) argument of \(G\).
 
 				</p>
 		</li>
@@ -287,14 +327,29 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 				\[
 					k_s ~ D(\omega_h) \cos{\theta_h} ~ J_h + (1-k_s) \frac{\cos{\theta_o}}{\pi}
 				\]
-				where \(k_s = 1 - \max(k_d)\) and \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\) is the Jacobian of the half direction mapping.
-				This follows the recipe discussed in class, by sampling from the microfacet distribution or from the diffuse component of the BRDF.
+				where \(k_s = 1 - \max(k_d)\) and \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\) is the Jacobian of the half direction mapping discussed in class.
+				Choose whether to sample the diffuse or the specular component
+				based on the value of \(k_s\). In the first case, follow the
+				recipe from the slides, by sampling a normal from the microfacet
+				distribution and reflecting the incident direction using this normal.
+				In the latter case, generate a cosine-weighted direction on the sphere
+				using the same method as the model in <tt>src/diffuse.cpp</tt>.
 			</p>
 		</li>
 		<li>
 			<h4>Validation <em> (10 Points)</em></h4>
 			<p>
-				You can experiment with the warptest GUI and visualize your implemented BRDF. Pass the \(\chi^2\) and t-tests for the Microfacet BRDF <tt>chi2test-microfacet.xml</tt> and <tt>ttest-microfacet.xml</tt> found in <tt>./scenes/pa3/tests/</tt>. Pass the middle 4 t-tests in <tt>test-distant.xml</tt>, middle 5 tests in <tt>test-mesh.xml</tt> and middle 2 tests in <tt>test-mesh-furnace.xml</tt>. Mention in your report if there were any errors found.
+				You can experiment with the warptest GUI and visualize your
+				implemented BRDF. Pass the \(\chi^2\) and t-tests for the
+				Microfacet BRDF <tt>chi2test-microfacet.xml</tt> and
+				<tt>ttest-microfacet.xml</tt> found in
+				<tt>./scenes/pa3/tests/</tt>. Pass the middle 4 t-tests in
+				<tt>test-distant.xml</tt>, middle 5 tests in
+				<tt>test-mesh.xml</tt> and middle 2 tests in
+				<tt>test-mesh-furnace.xml</tt>. Mention in your report if there
+				were any errors found. Note that the visual GUI also contains
+				a \(\chi^2\) test, but this is just to facilitate debugging and
+				visualization; the XML files are the real validation benchmark.
 			</p>
 		</li>
 
@@ -310,18 +365,24 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 				In this part we will implement another direct illumination integrator (<tt>direct_mis</tt>)
 				This integrator will combine both sampling strategies for computing direct illumination by using multiple importance sampling with the balance heuristic.
 				At your first camera ray intersection you will sample using both strategies: sampling the emitters and sampling the corresponding BSDF. You will then combine the
-				two estimates by using the following:
+				two estimates by using the following expression:
 			</p>
 
 			\[
 				  L_o (p,\omega_o) \approx \frac{1}{N} \sum^N \left(
-						L_e(p,\omega_o) + w_\text{em}\frac{L_r(p,\omega_o,\omega_{i,e}) }{\text{pdf}_\text{em}(\omega_{i,e})}
+						L_e(p,\omega_o) + w_\text{em}\frac{\integrand(p,\omega_o,\omega_{i,e}) }{\text{pdf}_\text{em}(\omega_{i,e})}
 
-					+ w_\text{mat} \frac{L_r(p,\omega_o,\omega_{i,m}) }{\text{pdf}_\text{mat}(\omega_{i,m})}
+					+ w_\text{mat} \frac{\integrand(p,\omega_o,\omega_{i,m}) }{\text{pdf}_\text{mat}(\omega_{i,m})}
 					\right)\\
 					w_\text{em} = \frac{\text{pdf}_\text{em}(\omega_{i,e}) }{\text{pdf}_{\text{em}}(\omega_{i,e})+\text{pdf}_{\text{mat}}(\omega_{i,e})}, ~ ~
 					w_\text{mat} = \frac{\text{pdf}_\text{mat}(\omega_{i,m}) }{\text{pdf}_{\text{em}}(\omega_{i,m})+\text{pdf}_{\text{mat}}(\omega_{i,m})}
 			\]
+			<p>
+			For this to work, it is <em>crucial</em> that the probability
+			densities are expressed in terms of the same units (so either
+			density per unit solid angle, or density per unit area). Mixing
+			units will lead to suboptimal weights.
+			</p>
 
 		<li>
 			<h4>Validation <em> (10 Points)</em></h4>
@@ -366,7 +427,7 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 			<li> Your t-test xml files (for each emitter: a file with 3+ tests each).</li>
 			<li> A table and a paragraph in your report summarizing the variance improvement for your test cases.</li>
 			<li> An equal sample count comparison with your previous generalized implementation of a scene featuring all emitters.</li>
-			<li> Citations for any papers/ideas that are not yours.</li>
+			<li> Citations for any papers/ideas that you relied on.</li>
 		</ul>
 	</p>
 
