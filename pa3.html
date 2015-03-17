@@ -305,12 +305,12 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 			<p>
 				The Microfacet BRDF you will implement for this part is a simple linear blend between a diffuse BRDF and a rough dielectric microfacet BRDF. Implement <code>Microfacet::eval()</code> which evaluates the described microfacet BRDF for a given pair of directions in local frame:
 				\[
-					f_r(\bold{\omega_i},\bold{\omega_o}) = \frac{k_d}{\pi} + (1-k_d) \frac{D(\bold{\omega_{h}})~
+					f_r(\bold{\omega_i},\bold{\omega_o}) = \frac{k_d}{\pi} + {\color{red} k_s} \frac{D(\bold{\omega_{h}})~
 					F\left({\color{red}(\bold{\omega_h} \cdot \bold{\omega_i})}, \eta_{e},\eta_{i}\right)~
 					G(\bold{\omega_i},\bold{\omega_o},\bold{\omega_{h}})}{4 \cos{\theta_i} \cos{\theta_o}}, ~~
 					\bold{\omega_{h}} = \frac{\left(\bold{\omega_i} + \bold{\omega_o}\right)}{\left|\left|\bold{\omega_i} + \bold{\omega_o}\right|\right|_2}
 				\]
-				where \(k_d \in [0,1]^3\) is the RGB diffuse reflection coefficient, \(F\) is the fresnel reflection coefficient (check <tt>common.cpp</tt>), \(\eta_e\) is the exterior index of refraction and \(\eta_i\) is the interior index of refraction. The distribution function \(D\) is the Beckmann distribution:
+				where \(k_d \in [0,1]^3\) is the RGB diffuse reflection coefficient, \(\color{red} k_s = 1 - \max(k_d)\), \(F\) is the fresnel reflection coefficient (check <tt>common.cpp</tt>), \(\eta_e\) is the exterior index of refraction and \(\eta_i\) is the interior index of refraction. The distribution function \(D\) is the Beckmann distribution:
 
 				\[
 					D(\bold{\omega_{h}}) = \frac{e^{\frac{-\tan^2{\theta_{h}}}{\alpha^2}}}{\pi\, \alpha^2 \cos^4 \theta_{h} }
@@ -351,7 +351,7 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 				\[
 					k_s ~ D(\omega_h) \cos{\theta_h} ~ J_h + (1-k_s) \frac{\cos{\theta_o}}{\pi}
 				\]
-				where \(k_s = 1 - \max(k_d)\) and \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\) 
+				where \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\) 
 				is the Jacobian of the half direction mapping discussed in class.
 				Choose whether to sample the diffuse or the specular component
 				based on the value of \(k_s\). In the first case, follow the
