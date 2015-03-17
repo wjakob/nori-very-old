@@ -321,13 +321,13 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 				\]
 
 				\[
-					G_1(\bold{\omega},\bold{\omega_h}) = \chi^+\left(\frac{\bold{\omega}\cdot\bold{\omega_h}}{\bold{\omega}\cdot\bold{n}}\right)
+					G_1(\bold{\omega_v},\bold{\omega_h}) = \chi^+\left(\frac{\bold{\omega_v}\cdot\bold{\omega_h}}{\bold{\omega_v}\cdot\bold{n}}\right)
 					\begin{cases}
 						\frac{3.535b+2.181b^2}{1+2.276b+2.577b^2} & b \lt 1.6 \\
 						1 										  & \text{otherwise}
 					\end{cases} \\
 
-					b = (a \tan{\theta_h})^{-1}, ~~
+					b = (a \tan{\theta_v})^{-1}, ~~
 
 					\chi^+(c) =
 					\begin{cases}
@@ -336,8 +336,8 @@ Vector3f d2_world = m_emitterToWorld * d2_local;
 					\end{cases} \\
 
 				\]
-				where \(\theta_h\) is the angle between the surface normal \(\bold{n}\)
-				and the \(\omega_h\) argument of \(G\).
+				where \(\theta_v\) is the angle between the surface normal \(\bold{n}\)
+				and the \(\omega_v\) argument of \(G\).
 
 				</p>
 		</li>
