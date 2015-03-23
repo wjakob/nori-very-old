@@ -13,7 +13,7 @@
 			<div class="thumbnail" style="margin: 10px">
 				<a class="fancybox" href="images/cbox_path_mis.png"><img src="images/cbox_path_mis.png"/></a>
 				<div class="caption">
-					A cornell box with a mirror and a glass ball illuminated by an area light. This scene was rendered 
+					A cornell box with a mirror and a glass ball illuminated by an area light. This scene was rendered
 					using path tracing and multiple importance sampling at 1024 samples per pixel.
 				</div>
 			</div>
@@ -30,7 +30,7 @@
 			<div class="thumbnail" style="margin: 10px">
 				<a class="fancybox" href="images/clocks_pmap.png"><img src="images/clocks_pmap.png"/></a>
 				<div class="caption">
-					The clocks scene from <a href ="http://www.ci.i.u-tokyo.ac.jp/~hachisuka/sppm.pdf"> Hackisuka et al.</a> 
+					The clocks scene from <a href ="http://www.ci.i.u-tokyo.ac.jp/~hachisuka/sppm.pdf"> Hackisuka et al.</a>
 					rendered using photon mapping and 40M photons.
 				</div>
 			</div>
@@ -49,30 +49,43 @@
 	</p>
 
 	<p>
-		In this exercise you be implementing global illumination integrators and 
-		a smooth dielectric BSDF. Your new integrators will approximate the solution of the rendering equation as discussed in class:
+		In this exercise you be implementing several global illumination integrators and
+		a BSDF to model smooth dielectric surfaces. Your new integrators will
+		approximate the solution of the rendering equation as discussed in
+		class:
 	</p>
 	\[
 		L_o (\vp,\omega_o) = L_e(\vp,\omega_o) + \int_{H^2} f_r (\vp,\omega_o,\omega_i)\,L_i (\vp,\omega_i) \, \mathrm{d} \omega_i.
 	\]
-	where \(f_r\) is the BRDF, \(p\) is a surface position and \(L_i\) and \(L_o\) denote the incident and outgoing radiance functions.
-	Generally, \(L_i\) and \(L_o\) are related to each other using the ray tracing operator
-	\(\vr(p, \omega)\), which returns the nearest surface position visible along the ray \(\vp, \omega\), i.e.
-	\[
-		L_i(\vp,\omega)=L_o(\vr(\vp, \omega), -\omega)
-	\]
-	and the above integral is thus defined recursively. 
-
-	
+	where \(f_r\) is the BRDF, \(p\) is a surface position and \(L_i\) and
+	\(L_o\) denote the incident and outgoing radiance functions. In comparison
+	to the prior assignment, we do not truncate the recursion and are thus
+	interested in estimators for the full solution of this equation.
 
 	<h3>Part 1: Dielectric BSDF <em>(10 points)</em></h3>
 	<p>
-		Extend Nori with an ideally smooth dielectric BSDF. It should
-		support reflection and refraction using Fresnel's and Snell's laws, and
-		it should conform to the following XML interface:
+		In this part, you will add one more surface reflection model which
+		has been sorely missing thus far: a BSDF which models a smooth dielectric
+		interface.
+
+		Dielectric interfaces (such as a transition from air to glass or water,
+		etc.) both reflect and refract incident illumination. The rules for
+		determining the direction and amount of scattered energy are given by the law
+		of specular reflection, Snells law, and the Fresnel equations. All of them
+		can be found in the course slides.
+
+		Following the usual Monte Carlo approach, the sampling code will make a
+		random choice to determine how light is scattered. In particular, the
+		probability that a reflection or refraction event takes place is
+		proportional to the reflection coefficient provided by the Fresnel equations.
+		Since there is no absorption, the corresponding <code>BSDF::sample()</code>
+		routine should always return an importance sampling weight of <code>1.0</code>.
+		The updated base code
+		already comes with a skeleton implementation in <tt>src/dielectric.cpp</tt>
+		which can be instantiated via the following XML syntax:
 	</p>
 
-			
+
 <pre class="prettyprint linenums lang-xml">
 &lt;bsdf type="dielectric"&gt;
     &lt;!-- Interior index of refraction --&gt;
@@ -81,9 +94,11 @@
     &lt;float name="extIOR" value="1"/&gt;
 &lt;/bsdf&gt;</pre>
 
-	<p>	
-		A good starting point is the provided code of another delta BRDF the <tt>Mirror</tt>. 
-		You will find the implementation in <tt>src/mirror.cpp</tt>.
+	<p>
+		It may be helpful to see a complete implementation of a specular/delta
+		function reflection model which scatters an incident ray into a
+		discrete set of directions. For this, take a look at the mirror BRDF in
+		<tt>src/mirror.cpp</tt> (also provided with the new base code).
 	</p>
 
 	<h3>Part 2: Path Tracing <em>(40 points)</em></h3>
@@ -92,9 +107,14 @@
 			<h4><tt>path_mats</tt> implementation <em>(10 Points)</em></h4>
 
 			<p>
-				In this part you will implement a naive global illumination path tracing integrator (<tt>path_mats</tt>) 
-				which can integrate incident radiance by performing BSDF sampling. Paths only contribute 
-				when they randomly hit a light source. Use Russian roulette for your path termination criterion.
+				In this part you will implement a naive global illumination
+				path tracing integrator (<tt>path_mats</tt>) which is an
+				estimator of the rendering equation using only BSDF sampling;
+				paths only contribute when they randomly hit a light source.
+				Your <tt>direct_mats</tt> integrator should be a great start:
+				you just have to add the recursion.
+				Use the Russian roulette technique as a path termination
+				criterion to avoid infinite recursion.
 			</p>
 		</li>
 
@@ -102,24 +122,26 @@
 			<h4><tt>path_mis</tt> implementation <em>(20 Points)</em></h4>
 
 			<p>
-				In this part you will implement a more advanced path tracer (<tt>path_mis</tt>) 
-				which can solve the rendering equation by performing both BSDF sampling and emitter sampling. Paths only contribute 
-				when they randomly hit a light source. Use Russian roulette for your path termination criterion.
+				In this part you will implement a more advanced path tracer (<tt>path_mis</tt>)
+				which solves the rendering equation by performing both BSDF sampling and emitter sampling and
+				combining the two strategies using multiple importance sampling as discussed in class.
+				Use the Russian roulette technique as a path termination
+				criterion to avoid infinite recursion.
 			</p>
 		</li>
 
 		<li>
 			<h4>Validation <em> (10 Points)</em></h4>
 			<p>
-				Pass the related tests found in <tt>./scenes/pa4/tests</tt>: 
-				<ul> 
+				Pass the related tests found in <tt>./scenes/pa4/tests</tt>:
+				<ul>
 					<li> <tt>test-distant.xml</tt>, </li>
 					<li> <tt>test-mesh.xml</tt>, </li>
 					<li> <tt>test-mesh-furnace.xml</tt> </li>
 				</ul>
 			</p>
 			<p>
-				Using <tt>path_mats</tt> and <tt>path_mis</tt> render the following scenes found in <tt>./scenes/pa4</tt> : 
+				Using <tt>path_mats</tt> and <tt>path_mis</tt> render the following scenes found in <tt>./scenes/pa4</tt> :
 				<ul>
 					<li><tt>cbox/cbox_mats.xml</tt>, </li>
 					<li><tt>cbox/cbox_mis.xml</tt>, </li>
@@ -131,12 +153,41 @@
 
 	<h3>Part 3: Photon Mapping <em>(40 points)</em></h3>
 	<p>
-		In this part you will be implementing a <tt>photonmapper</tt> integrator. This two pass integrator provides a biased 
-		estimate of the rendering equation. During the first pass (see <code>PhotonMapper::preprocess</code> a pre-defined number of photons will be emitted from all
-		light sources and then consecutively traced and stored in an already provided <tt>PhotonMap</tt> data structure, 
-		which is basically a KDTree. During the second pass (<code>PhotonMapper::Li</code>) camera originating paths will
-		be terminated at their first diffuse interaction and reflected radiance will be computed at those positions.
-		The scene specification of the <tt>photonmapper</tt> follows:
+		In this part you will be implementing a basic version of a photon map
+		integrator which provides a direct visualization (i.e. you without
+		final gathering) of the photon map on diffuse surfaces and behaves like
+		a path tracer elsewhere. This two pass technique provides a biased
+		estimate of the rendering equation and has better qualitative
+		performance for certain classes of light transport.
+	</p>
+	<p>
+		The new base code comes with various helper components to facilitate this
+		exercise as much as possible:
+		<ul>
+			<li>We provide photon map data structure for your convenience. It
+				is split up into three files: <tt>include/nori/kdtree.h</tt>
+				for the generic kd-tree and a specialization to photons in
+				<tt>include/nori/photon.h</tt> and <tt>src/photon.cpp</tt>.
+			</li>
+			<li>
+				We added a two new functions to the core renderer API: there is a new
+				function <code>Integrator::preprocess</code> that can be overridden by
+				the photon mapper to implement the photon tracing pass, and a function
+				<code>BSDF::isDiffuse</code> to distinguish diffuse and non-diffuse
+				surfaces.
+			</li>
+			<li>
+				The base code comes with a skeleton implementation of the photon mapper
+				in <tt>src/photonmapper.cpp</tt>which shows how to populate, build, and query
+				the photon map.
+			</li>
+		</ul>
+
+		During the first pass in <code>PhotonMapper::preprocess</code>, a pre-defined number of photons will be emitted from all
+		light sources and then consecutively traced and stored in a <tt>PhotonMap</tt> data structure.
+		During the second pass in <code>PhotonMapper::Li</code>, paths are traced from the camera much like in a regular
+		path tracer, except that photon queries are executed whenever an intersection with a diffuse surface is found.
+		The way of instantiating a <tt>photonmapper</tt> in the XML description language looks as follows:
 	</p>
 
 <pre class="prettyprint linenums lang-xml">
@@ -147,107 +198,81 @@
     &lt;float name="photonRadius" value="1.5"/&gt;
 &lt;/integrator&gt;</pre>
 
+The following list provides further detail on key steps that have to be implemented:
+
 	<ul>
 		<li>
 			<h4> Photon Emission (10 Points)</em></h4>
 
 			<p>
-				Implement photon emission from an isotropic point light, your mesh lights and the distant disk light.
-				Have a look at the photon data structure. Modify emitters to be able to shoot photons. Quantities: directins,power.
-				What about multiple light sources? talk about scene::samplePhoton and emitter::samplePhoton.
-				</p>
-				<ul>
-					<li> <h5> Point Lights (2 Points) </h5>
-						Implement photon emission from isotropic point lights. The power of each photon directly correlates
-						with the number of photons shot from that light source and the power of the point light.
-					</li>
-					<li> <h5> Mesh Area Lights (4 Points) </h5>
-						Implement photon emission from diffuse mesh area lights: first choose a uniform random location on the surface
-						area of the light, and then choose a cosine-weighted random direction over the hemisphere defined by the 
-						surface normal.
-					</li>
+				Add support for photon emission for point lights, mesh lights
+				and the distant disk emitter that you already implemented in prior
+				assignments. You will have to find an appropriate interface
+				(e.g. a new function <code>Emitter::samplePhoton()</code>) to
+				do this. It is also a good idea to add a generic photon
+				sampling routine (e.g. to the Scene), which randomly chooses an
+				emitter and in turn calls its photon sampling implementation.
+			</p>
+			<ul>
+				<li> <h5> Point Lights (2 Points) </h5>
+					Implement a routine to sample a photon emitted from an isotropic point light. It should
+					travel into a uniformly distributed direction on the sphere and carry a power that is
+					equal to the light source's power divided by the total number of photons.
+				</li>
+				<li> <h5> Mesh Area Lights (4 Points) </h5>
+					Implement photon emission from diffuse mesh area lights: first, uniformly choose a location on the surface
+					and then choose a cosine-weighted random direction over the hemisphere around the surface normal.
+					The power of the photon is \(\pi\cdot A\cdot L_e/N\), where \(L_e\) is the emitted radiance, \(N\)
+					is the number of photons and \(A\) is the total surface area of the mesh light.
+				</li>
 
-					<li> <h5> Distant Disk Lights (4 Points) </h5>
-						Implement photon emission from an isotropic point light. The power of each photon directly correlates
-						with the number of photons shot from that light source and the power of the point light.
-					</li>
-					
-				</ul>	
+				<li> <h5> Distant Disk Lights (4 Points) </h5>
+					Implement photon emission from a distant disk light. Determine yourself how the photon
+					sampling routine should work for this type of emitter.
+				</li>
+			</ul>
 		</li>
 
 		<li>
-			<h4>Photon Scattering & Storage (10 Points)</em></h4>
-				<ul>
-				<li> <h5> Perfect Mirrors (2 points) </h5>
-					<p>
-						Perfect mirror materials are delta materials that reflect all incident illumination at the reflection direction.
-						When a photon intersects a perfect mirror material it is always reflected with full throughput. 
-						Photons are never stored on mirror surfaces.
-					</p>
-				</li>
+			<h4>Photon Tracing and Storage (10 Points)</em></h4>
+			<p>
+				After a photon is sampled, the photon mapper traces it through
+				the scene much like paths are propagated in the
+				<tt>path_mats</tt> integrator, i.e. by repeatedly sampling a
+				direction from a BSDF, tracing a path in the sampled direction
+				and using a russian roulette termination criterion to prevent
+				infinite recursion. The sampling weights from the BSDF and
+				russian roulette steps are continually multiplied into the
+				photon weight. Each time a diffuse surface is intersected, a
+				photon record is created in the photon map. Once enough photons
+				have been collected, the iteration stops and invokes the
+				<code>PhotonMap::build()</code> routine.
+			</p>
 
-				<li> <h5> Specular Dielectrics (2 points) </h5>
-					<p>
-
-						Dielectric materials (such as glass, water etc.) are delta materials that both reflect and refract all incident
-						light at the reflection and refraction direction respectively. The equations for figuring out reflection 
-						and refraction directions are given on the course slides (Reflection and Snells law). The probability that 
-						a photon will be reflected or refracted is given by the Fresnel equations. Since there is no absoprtion on
-						dielectric surfaces, you can use a random variable in combination with the Fresnel equations to decide
-						whether a photon should reflect or refract. Photons are never stored on dielectric surfaces and since there
-						is no absorption, the power of the incident and outgoing photon should remain the same (i.e. 100% throughput).
-					</p>
-				</li>
-
-				<li> <h5> Microfacet (4 points) </h5>
-					<p>
-						Our Microfacet BRDF is a linear combination of a diffuse and a glossy Torrance Sparrow lobe. When a photon intersects
-						a microfacet surface it is not stored, but it is reflected according to our <code>Microfacet::PDF</code>. Since 
-						we cannot perfectly importance sample this material, we will have to update the power of the outgoing photon
-						according to \(f_r/\textit{pdf}\).
-					</p>
-				</li>				
-
-				<li> <h5> Diffuse (2 points) </h5>
-					<p>
-						When a photon encounters a diffuse material it is stored in the photon map and continues using BSDF sampling.
-						Store photons (position, direction and power) in the provided <tt>PhotonMap</tt> data structure. 
-						Apply russian roulette here before continuing based on total diffuse reflectance to avoid an exponential growth of
-						low power photons.
-					</p>
-				</li>
-				</ul>
 		</li>
-
 
 		<li>
 			<h4>Rendering/Radiance Estimation <em> (15 Points)</em></h4>
 			<p>
-				Start by implementing an integrator similar to <tt>path_mats</tt>. 
-				At all non delta material intersections, direct illumination sampling should be performed according to the emitters density function.
-				Camera paths that directly reach an emitter or the previous interaction was with a delta material should accumulate emitted radiance 
-				at that point from that emitter. If the previous interaction was with a non delta material then emitted radiance should not be added 
-				(in our case this only applies to microfacet since camera paths terminate at the first diffuse interaction). If the emitter is coated 
-				with a material, then the camera path should then continue according to the materials density function. 
-
-			</p>
-			<p>
-				When a ray intersects a mirror,dielectric or microfacet surface, reflect or refract it accordingly. Use Russian roulette for your path 
-				termination criterion. Once a camera path reaches a diffuse surface, perform density estimation to approximate reflected radiance and 
-				then terminate the camera path. You can approximate reflected radiance using:
-				\[
-					L_r = \sum^{m_p} \frac{ \rho W_p } {\pi r^2 N_p}
-				\]
-				where \(\rho\) is the reflectance at the query point, \(m_p\) is the number of photons found in the search radius \(r\), \(W_p\) is the 
-				power of each photon and \(N_p\) is the total number of emitted photons. Do not count photons within the search radius when they are 
-				hitting the surface from the back.
+				In the second pass, paths are traced through the scene starting
+				from the camera (by <code>PhotonMapper::Li</code>) to estimate
+				the incident illumination. Once again, this piece of code is
+				almost identical to what you implemented in <tt>path_mats</tt>.
+				The only difference is that, whenever a diffuse surface is
+				intersected, the algorithm queries the photon map and
+				immediately terminates the recursion.
+				For non-diffuse surface, the integrator samples a direction from
+				a BSDF, traces a ray in this direction, and so on (once more,
+				using the Russian roulette technique to avoid infinite recursion).
+				Detail on the photon map density estimation step is provided in
+				the course slides.
 			</p>
 		</li>
 
 		<li>
 			<h4>Validation <em> (5 Points)</em></h4>
 			<p>
-				Using <tt>photonmapper</tt> render the following scenes found in <tt>./scenes/pa4</tt> : 
+				Using <tt>photonmapper</tt> render the following scenes found in <tt>./scenes/pa4</tt> :
 				<ul>
 					<li><tt>cbox/cbox_pmap.xml</tt>, </li>
 					<li><tt>cbox/clocks_pmap.xml</tt>, </li>
@@ -266,11 +291,14 @@
 	<h3> Hacker Points: Progressive updates <em>(20 points)</em></h3>
 
 	<p>
-		For this part your task is to extend your renderer such that it can display intermediate results 
-		of the full but still unconverged image. For path tracing integrators you can show the noisy
-		estimate of the image after every pass with a few number of samples. For the photon mapper you can
-		show a progressive estimate of the image starting with a large search radius and then progressively
-		reducing it. Use the algorithm described in Figure 13 of Knaus and Zwicker 
+		For this part your task is to extend your renderer such that it can
+		display intermediate results of an "infinitely long" rendering session
+		where the result continually improves. For path tracing integrators
+		show the noisy estimate of the image after every pass with a few number
+		of samples. For the photon mapper, show a progressive estimate of the
+		image starting with a large search radius and then progressively
+		reducing it. Use the algorithm described in Figure 13 of Knaus and
+		Zwicker
 		<a href="http://cgg.unibe.ch/publications/2011/progressive-photon-mapping-a-probabilistic-approach">[2011]</a>
 	</p>
 
