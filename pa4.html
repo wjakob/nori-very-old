@@ -20,9 +20,10 @@
 		</div>
 		<div class="col-md-4">
 			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/cbox_pmap.png"><img src="images/cbox_pmap.png"/></a>
+				<a class="fancybox" href="images/table_path_mis.png"><img src="images/table_path_mis.png"/></a>
 				<div class="caption">
-					The same scene rendered with photon mapping and 10M photons.
+					A table with a microfacet bowl and a glass illuminated by two area lights. This scene was rendered
+					using path tracing and multiple importance sampling at 512 samples per pixel.
 				</div>
 			</div>
 		</div>
@@ -135,9 +136,8 @@
 			<p>
 				Pass the related tests found in <tt>./scenes/pa4/tests</tt>:
 				<ul>
-					<li> <tt>test-distant.xml</tt>, </li>
-					<li> <tt>test-mesh.xml</tt>, </li>
-					<li> <tt>test-mesh-furnace.xml</tt> </li>
+					<li> <tt>test-direct.xml</tt>, </li>
+					<li> <tt>test-furnace.xml</tt> </li>
 				</ul>
 			</p>
 			<p>
@@ -145,8 +145,10 @@
 				<ul>
 					<li><tt>cbox/cbox_mats.xml</tt>, </li>
 					<li><tt>cbox/cbox_mis.xml</tt>, </li>
+					<li><tt>table/table_mats.xml</tt>, </li>
+					<li><tt>table/table_mis.xml</tt>, </li>
 				</ul>
-				In your report provide a 3-way comparison of your rendering results and the mis reference.
+				In your report provide two 3-way comparisons of your rendering results and the mis reference.
 			</p>
 		</li>
 	</ul>
@@ -154,7 +156,7 @@
 	<h3>Part 3: Photon Mapping <em>(40 points)</em></h3>
 	<p>
 		In this part you will be implementing a basic version of a photon map
-		integrator which provides a direct visualization (i.e. you without
+		integrator which provides a direct visualization (i.e. without
 		final gathering) of the photon map on diffuse surfaces and behaves like
 		a path tracer elsewhere. This two pass technique provides a biased
 		estimate of the rendering equation and has better qualitative
@@ -178,13 +180,14 @@
 			</li>
 			<li>
 				The base code comes with a skeleton implementation of the photon mapper
-				in <tt>src/photonmapper.cpp</tt>which shows how to populate, build, and query
+				in <tt>src/photonmapper.cpp</tt> which shows how to populate, build, and query
 				the photon map.
 			</li>
 		</ul>
 
-		During the first pass in <code>PhotonMapper::preprocess</code>, a pre-defined number of photons will be emitted from all
-		light sources and then consecutively traced and stored in a <tt>PhotonMap</tt> data structure.
+		During the first pass in <code>PhotonMapper::preprocess</code>, an unknown number of photons will be emitted from all
+		light sources and then consecutively traced and stored in a <tt>PhotonMap</tt> data structure. The process stops
+		when the photons stored in the <tt>PhotonMap</tt> reach the pre-defined number of photons (<tt>photonCount</tt>).
 		During the second pass in <code>PhotonMapper::Li</code>, paths are traced from the camera much like in a regular
 		path tracer, except that photon queries are executed whenever an intersection with a diffuse surface is found.
 		The way of instantiating a <tt>photonmapper</tt> in the XML description language looks as follows:
@@ -202,35 +205,21 @@ The following list provides further detail on key steps that have to be implemen
 
 	<ul>
 		<li>
-			<h4> Photon Emission (10 Points)</em></h4>
-
-			<p>
-				Add support for photon emission for point lights, mesh lights
-				and the distant disk emitter that you already implemented in prior
-				assignments. You will have to find an appropriate interface
-				(e.g. a new function <code>Emitter::samplePhoton()</code>) to
-				do this. It is also a good idea to add a generic photon
-				sampling routine (e.g. to the Scene), which randomly chooses an
-				emitter and in turn calls its photon sampling implementation.
-			</p>
-			<ul>
-				<li> <h5> Point Lights (2 Points) </h5>
-					Implement a routine to sample a photon emitted from an isotropic point light. It should
-					travel into a uniformly distributed direction on the sphere and carry a power that is
-					equal to the light source's power divided by the total number of photons.
-				</li>
-				<li> <h5> Mesh Area Lights (4 Points) </h5>
-					Implement photon emission from diffuse mesh area lights: first, uniformly choose a location on the surface
+			<h4> Photon Emission from Mesh Area Lights (5 Points)</em></h4>
+				 <p>
+					Add support for photon emission for only mesh area
+					lights. You will have to find an appropriate interface
+					(e.g. a new function <code>Emitter::samplePhoton()</code>) to
+					do this. It is also a good idea to add a generic photon
+					sampling routine (e.g. to the Scene), which randomly chooses an
+					emitter and in turn calls its photon sampling implementation.
+				</p>
+				<p>
+					Implementation: first, uniformly choose a location on the surface
 					and then choose a cosine-weighted random direction over the hemisphere around the surface normal.
 					The power of the photon is \(\pi\cdot A\cdot L_e/N\), where \(L_e\) is the emitted radiance, \(N\)
 					is the number of photons and \(A\) is the total surface area of the mesh light.
-				</li>
-
-				<li> <h5> Distant Disk Lights (4 Points) </h5>
-					Implement photon emission from a distant disk light. Determine yourself how the photon
-					sampling routine should work for this type of emitter.
-				</li>
-			</ul>
+				</p>
 		</li>
 
 		<li>
@@ -270,14 +259,16 @@ The following list provides further detail on key steps that have to be implemen
 		</li>
 
 		<li>
-			<h4>Validation <em> (5 Points)</em></h4>
+			<h4>Validation <em> (10 Points)</em></h4>
 			<p>
 				Using <tt>photonmapper</tt> render the following scenes found in <tt>./scenes/pa4</tt> :
 				<ul>
 					<li><tt>cbox/cbox_pmap.xml</tt>, </li>
-					<li><tt>cbox/clocks_pmap.xml</tt>, </li>
+					<li><tt>clocks/clocks_pmap.xml</tt>, </li>
+					<li><tt>table/table_pmap.xml</tt>, </li>
 				</ul>
 				In your report provide a 2-way comparison of your rendering results and the photon mapping reference.
+				Explain in your report any differences.
 			</p>
 		</li>
 
